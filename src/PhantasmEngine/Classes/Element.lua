@@ -1,102 +1,48 @@
-local NUMBERPATTERN = "(%d+)(%w*)" -- returns number, unit
-
 local Libraries = script.Parent.Parent.Libraries
 local ObjectCache = require(Libraries.ObjectCache)
+local BoatTween = require(Libraries.BoatTween)
+local Util
 local Classes = script.Parent
 local Maid = require(Classes.Maid)
+local Navigator = require(Classes.Navigator)
+local AnimationStack = require(Classes.AnimationStack)
+local Animator = require(Classes.Animator)
 
 local caches = {}
 
-local camera = workspace.CurrentCamera
-local units = {
-	-- Normal
-	["cm"] = function(value)
-		return value * 38
-	end;
-	["mm"] = function(value)
-		return value * 4
-	end;
-	["in"] = function(value)
-		return value * 96
-	end;
-	["px"] = function(value)
-		return value
-	end;
-	["pt"] = function(value)
-		return math.floor(value * 1.33333333)
-	end;
-	["pc"] = function(value)
-		return math.floor(value * 16)
-	end;
-	["vw"] = function(value)
-		return (camera.ViewportSize.X*.01)*value
-	end;
-	["vh"] = function(value)
-		return (camera.ViewportSize.Y*.01)*value
-	end;
-	["vmin"] = function(value)
-		return (getViewportDimension(true)*.01)*value
-	end;
-	["vmax"] = function(value)
-		return (getViewportDimension(false)*.01)*value
-	end;
-	["s"] = function(value)
-		return value
-	end;
-	["mins"] = function(value)
-		return value * 60
-	end;
-	-- Element-Based
-	["em"] = function(value, element)
-		return value * element.TextSize
-	end;
-	["rem"] = function(value, element)
-		return value * 14
-	end;
-	["%"] = function(value, element)
-		local parentElement = element:FindFirstAncestorWhichIsA("GuiBase2d")
-		return (value/100) * (parentElement and parentElement.AbsoluteSize.X or 0)
-	end;
-}
-
-function getViewportDimension(bigger)
-	return bigger and (camera.ViewportSize.X > camera.ViewportSize.Y and camera.ViewportSize.X) or (camera.ViewportSize.X < camera.ViewportSize.Y and camera.ViewportSize.X) or camera.ViewportSize.Y
-end
-
-function interpretNumber(value: string, element: Instance): number
-	local result = 0
-
-	for _, v in pairs(string.split(value, ",")) do
-		local num, unit = string.match(v, NUMBERPATTERN)
-		if num and unit then
-			local converter = units[unit]
-			if converter then
-				result += converter(tonumber(num), element)
-			else
-				result += tonumber(num)
-			end
-		elseif tonumber(value) then
-			result += tonumber(value)
-		end
-	end
-
-	return result
+function getSizeFromParent(udim2: UDim2, parent: GuiBase2d)
+	return UDim2.fromOffset((udim2.X.Scale * parent.AbsoluteSize.X) + udim2.X.Offset, (udim2.Y.Scale * parent.AbsoluteSize.Y) + udim2.Y.Offset)
 end
 
 local class = {}
-class.__index = class
+Navigator(class)
 
-function class.new(name, data)
-	local self = setmetatable({}, class)
+function class.new(name: string, data: table, tree: table, parent: table|nil)
+	if Util == nil then
+		Util = require(Libraries.Util)
+	end
+	local self = {}
 
 	if caches[data.ClassName] == nil then
-		caches[data.ClassName] = ObjectCache.new(Instance.new(data.ClassName), 100)
+		caches[data.ClassName] = ObjectCache.new(Instance.new(data.ClassName), 100, script)
 	end
 
 	self.ClassName = data.ClassName
 	self.Properties = data.Properties
 	self.Data = data
 	self.Children = {}
+	self.Tree = tree
+	self.AnimationStack = AnimationStack.new(self)
+	self.Parent = parent
+
+	self.Animations = {}
+	self.Sounds = {}
+
+	self.State = "Normal"
+	self.ActiveStates = {}
+
+	self.StateAnimations = {}
+	self.__Bindings = {}
 
 	self.Object = caches[self.ClassName]:GetObject()
 	self.Maid = Maid.new()
@@ -104,41 +50,269 @@ function class.new(name, data)
 	self.Object.Name = name
 	self.Name = name
 
-	return self
+	-- Setup initial state animation
+	local initialProperties = {}
+	for prop, val in pairs(data.Properties) do
+		-- Only allow types that BoatTween supports
+		if not Util:IsTweenable(val) then continue end
+		initialProperties[prop] = val
+	end
+
+	local normalState = data.StateAnimations and data.StateAnimations.Normal or {}
+	self.StateAnimations.Normal = {
+		EasingStyle = normalState.EasingStyle or "Sine";
+		EasingDirection = normalState.EasingDirection or "Out";
+		Time = normalState.Time or nil;
+		Goal = initialProperties;
+	}
+
+	self.__StateAnimations = {}
+
+	-- Setup state animations
+	if data.StateAnimations then
+		for state, info in pairs(data.StateAnimations) do
+			-- The info for the normal state is only used for the easing style and direction as well as time so we skip it here
+			if state == "Normal" then continue end
+			Util:DebugPrint(string.format("Setup state animation data '%s' for element '%s'", state, name))
+			Util:DebugPrint(info)
+			self.StateAnimations[state] = info
+		end
+	end
+
+	-- Setup sound information
+	if data.Sounds then
+		for state, sound in pairs(data.Sounds) do
+			self.Sounds[state] = sound
+		end
+	end
+
+	-- Setup element animations
+	if data.Animations then
+		for index, animData in pairs(data.Animations) do
+			self.Animations[index] = Animator.new(self, animData)
+		end
+	end
+
+	-- Setup default state handlers
+	do
+		if self.Object:IsA"GuiObject" then
+			self.Maid:GiveTask(self.Object.MouseEnter:Connect(function()
+				self.ActiveStates.Hover = true
+			end))
+
+			self.Maid:GiveTask(self.Object.MouseLeave:Connect(function()
+				self.ActiveStates.Hover = false
+			end))
+		end
+
+		if self.Object:IsA"TextBox" then
+			self.Maid:GiveTask(self.Object.Focused:Connect(function()
+				self.ActiveStates.Focused = true
+			end))
+
+			self.Maid:GiveTask(self.Object.FocusLost:Connect(function()
+				self.ActiveStates.Focused = false
+			end))
+		end
+
+		if self.Object:IsA"GuiButton" then
+			self.Maid:GiveTask(self.Object.MouseButton1Down:Connect(function()
+				self.ActiveStates.Pressed = true
+			end))
+
+			self.Maid:GiveTask(self.Object.MouseButton1Up:Connect(function()
+				self.ActiveStates.Pressed = false
+			end))
+		end
+	end
+
+	return setmetatable(self, class)
 end
 
 function class:Render()
-	local mainGUI = self.Object:FindFirstAncestorOfClass("ScreenGui")
-
-	local parentSize do
-		local parent = self.Object:FindFirstAncestorWhichIsA("GuiObject") or self.Object:FindFirstAncestorWhichIsA("ScreenGui")
-		if parent then
-			parentSize = parent.AbsoluteSize
-		else
-			parentSize = Vector2.new()
+	-- Update bindings
+	for prop, val in pairs(self.Properties) do
+		if type(val) == "table" and val.Type == "Binding" then
+			local binding = Util:GetBinding(self.Tree, val.Name)
+			if binding then
+				local result = binding(self, val.Settings, prop)
+				if self.__Bindings[prop] ~= result then
+					if typeof(result) == "UDim2" then
+						result = getSizeFromParent(result, self.Object.Parent)
+					end
+					self.__Bindings[prop] = result
+					self.Object[prop] = result
+				end
+			end
 		end
 	end
 
+	-- Determine current state
+	local activeStates = self.ActiveStates
+	local State do
+		if activeStates.Pressed then
+			State = "Pressed"
+		elseif activeStates.Focused then
+			State = "Focused"
+		elseif activeStates.Hover then
+			State = "Hover"
+		else
+			State = "Normal"
+		end
+	end
+
+	-- Play the appropriate state animation
+	if self.State ~= State then
+		Util:DebugPrint(string.format("Element '%s' has entered state '%s' from state '%s'", self.Name, State, self.State))
+		local enteringSound = self.Sounds[State]
+		if enteringSound then
+			local sound = Instance.new("Sound")
+			for prop, val in pairs(enteringSound) do
+				sound[prop] = val
+			end
+			sound.Ended:Connect(sound.Destroy)
+			sound.Parent = workspace
+
+			Util:DebugPrint(string.format("Playing state sound '%s' for element '%s'", State, self.Name))
+			sound:Play()
+		end
+
+		local enteringStateAnim = self.StateAnimations[State]
+
+		if enteringStateAnim then
+			for otherState, animSet in pairs(self.__StateAnimations) do
+				if otherState ~= State then
+					animSet:Stop()
+				end
+			end
+
+			Util:DebugPrint(string.format("Playing state animation '%s' for element '%s'", State, self.Name))
+			local properties = Util:DeepCopy(rawget(self, "Properties"))
+			local newStateTween = BoatTween:Create(properties, enteringStateAnim)
+			self.__StateAnimations[State] = newStateTween
+			-- Add the state animation to the bottom of the stack (actual animations should take precedence over state-based ones)
+			self.AnimationStack:AddToStack({
+				Animator = newStateTween;
+				Properties = properties;
+			}, 0)
+		end
+	end
+
+	-- Update the state
+	self.State = State
+
+	-- Update the animation stack
+	self.AnimationStack:Update()
+
+	-- Update Size
 	if self.Object:IsA"GuiObject" and self.Properties.Size then
 		if typeof(self.Properties.Size) == "UDim2" then
-			self.Object.Size = self.Properties.Size
-		else
-			local x, y = interpretNumber(self.Properties.Size.X, self.Object), interpretNumber(self.Properties.Size.Y, self.Object)
-			self.Object.Size = UDim2.fromOffset(x, y)
+			self.Object.Size = getSizeFromParent(self.Properties.Size, self.Object.Parent)
 		end
 	end
 
+	-- Update Position
 	if self.Object:IsA"GuiObject" and self.Properties.Position then
 		if typeof(self.Properties.Position) == "UDim2" then
-			self.Object.Position = self.Properties.Position
-		else
-			local x, y = interpretNumber(self.Properties.Position.X, self.Object), interpretNumber(self.Properties.Position.Y, self.Object)
-			self.Object.Position = UDim2.fromOffset(x, y)
+			self.Object.Position = getSizeFromParent(self.Properties.Position, self.Object.Parent)
 		end
+	end
+
+	-- Update changed properties
+	if self.__Properties == nil then
+		self.__Properties = {}
+	end
+
+	if not Util:CompareTables(self.__Properties, self.Properties) then
+		Util:DebugPrint(string.format("Element '%s' has changed.", self.Name))
+		local changeList = Util:GenerateDifferences(self.__Properties, self.Properties)
+
+		local combinedChanges = Util:CombineTables(changeList.Changes, changeList.Additions)
+
+		for prop, val in pairs(combinedChanges) do
+			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, prop), val)
+			if prop == "Size" or prop == "Position" then
+				-- Skip size and position if it isn't the first render call as we already handle them above
+				if changeList.Additions[prop] == nil then
+					continue
+				end
+			end
+			if typeof(self.Object[prop]) == "RBXScriptSignal" then
+				if self.Maid[prop] then
+					self.Maid[prop] = nil
+				end
+				if type(val) == "table" then
+					-- It's a preset function, get the actual function
+					local result = Util:GetFunction(self.Tree, val.Name)
+					if result then
+						self.Maid[prop] = self.Object[prop]:Connect(function(...)
+							result.Run(self, val.Settings, ...)
+						end)
+					end
+				elseif type(val) == "function" then
+					self.Maid[prop] = self.Object[prop]:Connect(val)
+				else
+					warn(string.format("Failed to connect event for '%s': expected a function or a reference to an engine function, got '%s' instead.", prop, typeof(val)))
+				end
+			else
+				-- According to my knowledge, no known Roblox classes have table-based properties
+				-- So we can safely skip these value types, if this changes in the future this will be fixed.
+				if type(val) == "table" then continue end
+				-- If it is a UDim2 value, we convert the
+				if typeof(val) == "UDim2" then
+					val = getSizeFromParent(val, self.Object.Parent)
+				end
+				self.Object[prop] = val
+			end
+		end
+		self.__Properties = Util:DeepCopy(self.Properties)
+	end
+
+	-- Render all children
+	for _, child in pairs(self.Children) do
+		child:Render()
 	end
 end
 
+function class:PlayAnimation(name)
+	local animator = self.Animations[name]
+
+	assert(animator, string.format("An animation with the name '%s' does not exist on element '%s'", name, self.Name))
+	if not animator.Playing then
+		self.AnimationStack:AddToStack(animator.StackData)
+	end
+end
+
+function class:StopAnimation(name)
+	local animator = self.Animations[name]
+
+	assert(animator, string.format("An animation with the name '%s' does not exist on element '%s'", name, self.Name))
+	animator:Stop()
+end
+
+function class:Tween(data)
+	local properties = Util:DeepCopy(self.Properties)
+	local tween = BoatTween:Create(properties, data)
+	-- Add the tween to the top of the stack
+	self.AnimationStack:AddToStack{
+		Animator = tween;
+		Properties = properties;
+	}
+
+	-- Return the tween object so that the developer can cancel it if needed
+	return tween
+end
+
+function class:IsA(name)
+	return self.Object:IsA(name) or name == "Element"
+end
+
 function class:Destroy()
+	if self.Object == nil then return end
+	for _, element in pairs(self.Children) do
+		element:Destroy()
+	end
+
 	self.Maid:DoCleaning()
 	caches[self.ClassName]:ReturnObject(self.Object)
 	self.Object = nil
