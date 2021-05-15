@@ -1,3 +1,10 @@
+--[[
+--File Name: Util.lua
+--Author: TheGrimDeathZombie
+--Last Modified: Saturday, 15th May 2021 3:33:07 pm
+--Modified By: TheGrimDeathZombie
+--]]
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
@@ -84,7 +91,7 @@ function module:GetComponent(tree, name)
 	end
 end
 
-function module:ExecuteFunction(value: function|table, element, arguments, ...)
+function module:ExecuteFunction(value, element, arguments, ...)
 	if type(value) == "function" then
 		return value(element, arguments, ...)
 	elseif type(value) == "table" and value.Type == "Function" then
@@ -113,7 +120,49 @@ function module:GetFunction(tree, name)
 	end
 end
 
-function module:GenerateElements(ourTree, data)
+--- A function that generates an individual element
+function module:GenerateElement(name, ourTree, data, parent)
+	if Element == nil then
+		Element = require(Classes.Element)
+	end
+	if Component == nil then
+		Component = require(Classes.Component)
+	end
+	
+	local newElement
+
+	if type(data) == "function" then
+		module:DebugPrint("Creating component with name",name,"using constructor function:")
+		module:DebugPrint(data)
+
+		newElement = Component.new(name, data, ourTree, parent or ourTree)
+	elseif data.ClassName == "Component" then
+		module:DebugPrint("Creating component with name",name,"and data:")
+		module:DebugPrint(data)
+
+		newElement = Component.new(name, data, ourTree, parent or ourTree)
+		if data.Overlay then
+			newElement.Object.Parent = ourTree.OverlayGUI
+		end
+	else
+		module:DebugPrint("Creating element with name",name,"and data:")
+		module:DebugPrint(data)
+
+		newElement = Element.new(name, data, ourTree, parent or ourTree)
+		if data.Overlay then
+			newElement.Object.Parent = ourTree.OverlayGUI
+		end
+
+		if data.Children then
+			newElement.Children = module:GenerateElements(ourTree, data.Children, newElement)
+		end
+	end
+
+	return newElement
+end
+
+--- A function that generates an element tree
+function module:GenerateElements(ourTree, data, mainParent)
 	if Element == nil then
 		Element = require(Classes.Element)
 	end
@@ -124,31 +173,7 @@ function module:GenerateElements(ourTree, data)
 		local results = {}
 
 		for name, v in pairs(tree) do
-			local newElement
-			
-			if type(v) == "function" then
-				module:DebugPrint("Creating component with name",name,"using constructor function:")
-				module:DebugPrint(v)
-
-				newElement = Component.new(name, v, ourTree)
-				newElement.Parent = v.Overlay and self.OverlayGUI or (parent and parent.Object or ourTree.GUI)
-			elseif v.ClassName == "Component" then
-				module:DebugPrint("Creating component with name",name,"and data:")
-				module:DebugPrint(v)
-
-				newElement = Component.new(name, v, ourTree)
-				newElement.Parent = v.Overlay and self.OverlayGUI or (parent and parent.Object or ourTree.GUI)
-			else
-				module:DebugPrint("Creating element with name",name,"and data:")
-				module:DebugPrint(v)
-				
-				newElement = Element.new(name, v, ourTree)
-				newElement.Object.Parent = v.Overlay and self.OverlayGUI or (parent and parent.Object or ourTree.GUI)
-
-				if v.Children then
-					newElement.Children = traverseTree(v.Children, newElement)
-				end
-			end
+			local newElement = module:GenerateElement(name, ourTree, v, parent)
 
 			results[name] = newElement
 		end
@@ -156,7 +181,7 @@ function module:GenerateElements(ourTree, data)
 		return results
 	end
 
-	return traverseTree(data)
+	return traverseTree(data, mainParent)
 end
 
 function module:InDebugMode()

@@ -1,3 +1,10 @@
+--[[
+--File Name: Navigator.lua
+--Author: TheGrimDeathZombie
+--Last Modified: Saturday, 15th May 2021 3:50:07 pm
+--Modified By: TheGrimDeathZombie
+--]]
+
 local Libraries = script.Parent.Parent.Libraries
 local Util
 
@@ -154,7 +161,7 @@ return function(object)
 		local Children, Properties, Component, Object, Name = (rawget(self, "Children") or rawget(self, "Elements")),
 			rawget(self, "Properties"),
 			rawget(self, "Component"),
-			rawget(self, "Object") or rawget(self, "GUI"),
+			rawget(self, "Object"),
 			rawget(self, "Name")
 
 		-- Initial check to see if there is an artifical instance function
@@ -204,10 +211,9 @@ return function(object)
 		if string.sub(what, 1, 2) == "__" then
 			rawset(self, what, to)
 		else
-			local ClassName, Component, Properties, Gui = rawget(self, "ClassName"),
+			local ClassName, Component, Properties = rawget(self, "ClassName"),
 				rawget(self, "Component"),
-				rawget(self, "Properties"),
-				rawget(self, "GUI")
+				rawget(self, "Properties")
 			
 			if ClassName == "Component" then
 				local propertyInfo = Component.Properties[what]
@@ -216,9 +222,9 @@ return function(object)
 				end
 			end
 		
-			if Gui then
+			if ClassName == "Interface" then
 				if GuiWhitelist[what] then
-					Gui[what] = to
+					self.Object[what] = to
 				else
 					Properties[what] = to
 				end

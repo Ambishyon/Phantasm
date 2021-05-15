@@ -1,3 +1,10 @@
+--[[
+--File Name: Interface.lua
+--Author: TheGrimDeathZombie
+--Last Modified: Saturday, 15th May 2021 3:40:36 pm
+--Modified By: TheGrimDeathZombie
+--]]
+
 local Players = game:GetService("Players")
 
 local Libraries = script.Parent.Parent.Libraries
@@ -5,6 +12,7 @@ local Util = require(Libraries.Util)
 local Classes = script.Parent
 local Maid = require(Classes.Maid)
 local Navigator = require(Classes.Navigator)
+local AnimationSet = require(Classes.AnimationSet)
 
 local player = Players.LocalPlayer
 local class = {}
@@ -18,15 +26,18 @@ function class.new(data: table, parent: Instance?)
 	self.Maid = Maid.new()
 	self.Name = "Interface"
 	self.Parent = nil
+	self.ClassName = "Interface"
 
-	self.Components = data.Components
-	self.Functions = data.Functions
-	self.Bindings = data.Bindings
-	self.Animations = data.Animations
+	self.Components = data.Components or {}
+	self.Functions = data.Functions or {}
+	self.Bindings = data.Bindings or {}
+	self.Animations = data.Animations or {}
+
+	self.__Animations = nil
 
 	self.Context = {}
-	
-	self.GUI = parent or Instance.new("ScreenGui", player.PlayerGui)
+
+	self.Object = parent or Instance.new("ScreenGui", player.PlayerGui)
 	self.__HadParent = parent ~= nil
 
 	self.OverlayGUI = Instance.new("Frame")
@@ -34,11 +45,35 @@ function class.new(data: table, parent: Instance?)
 	self.OverlayGUI.Size = UDim2.fromScale(1,1)
 	self.OverlayGUI.ZIndex = 999999
 	self.OverlayGUI.Name = "Phantasm Overlay"
-	self.OverlayGUI.Parent = self.GUI
+	self.OverlayGUI.Parent = self.Object
 
 	self.Elements = Util:GenerateElements(self, data.Elements)
 
 	return setmetatable(self, class)
+end
+
+function class:PlayAnimation(name)
+	local animData = self.Animations[name]
+	assert(animData, string.format("Interface '%s' does not have an animation with the name '%s'", self.Name, name))
+	-- If the animation is already playing, stop and destroy it before replaying
+	self:StopAnimation(name)
+	-- Now we play the animation
+	if animData then
+		self.__Animations[name] = AnimationSet.new(self, animData)
+		self.__Animations[name]:Play()
+	end
+end
+
+function class:StopAnimation(name)
+	assert(self.Animations[name], string.format("Interface '%s' does not have an animation with the name '%s'", self.Name, name))
+	if self.__Animations[name] then
+		self.__Animations[name]:Destroy()
+		self.__Animations[name] = nil
+	end
+end
+
+function class:IsA(name: string)
+	return name == self.ClassName
 end
 
 function class:Render()
@@ -52,7 +87,7 @@ function class:Destroy()
 	self.Data = nil
 	self.Tree = nil
 	if not self.__HadParent then
-		self.GUI:Destroy()
+		self.Object:Destroy()
 	else
 		self.OverlayGUI:Destroy()
 	end

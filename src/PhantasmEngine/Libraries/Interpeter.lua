@@ -1,3 +1,10 @@
+--[[
+--File Name: Interpeter.lua
+--Author: TheGrimDeathZombie
+--Last Modified: Saturday, 15th May 2021 3:47:39 pm
+--Modified By: TheGrimDeathZombie
+--]]
+
 local module = {}
 
 local structures = {

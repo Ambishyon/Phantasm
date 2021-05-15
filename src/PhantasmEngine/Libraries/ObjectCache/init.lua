@@ -1,6 +1,6 @@
 --!strict
 --[[
-	ObjectCache V4.0, modification of PartCache V4.0 originally made by Xan the Dragon to support caching any kind of instance. // Eti the Spirit -- RBX 18406183
+	ObjectCache V1.0 is a modification of PartCache V4.0 originally made by Xan the Dragon to support caching any kind of instance. // Eti the Spirit -- RBX 18406183
 
 	Update V4.0 has added Luau Strong Type Enforcement.
 	

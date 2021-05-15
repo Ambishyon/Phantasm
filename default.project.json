@@ -1,7 +1,7 @@
 {
   "name": "Phantasm-UI-Engine",
   "tree": {
-    "$className": "Datamodel",
+    "$className": "DataModel",
     "Phantasm": {
       "$path": "src"
     }

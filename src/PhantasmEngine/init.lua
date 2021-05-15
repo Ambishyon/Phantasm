@@ -1,3 +1,10 @@
+--[[
+--File Name: init.lua
+--Author: TheGrimDeathZombie
+--Last Modified: Saturday, 15th May 2021 3:45:37 pm
+--Modified By: TheGrimDeathZombie
+--]]
+
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -24,6 +31,12 @@ local PHANTASMFOLDER = ReplicatedStorage:WaitForChild("Phantasm", 5) or Util.Cre
 	};
 }
 
+if RunService:IsStudio() and RunService:IsRunning() == false then
+	-- If the code is running in studio and isn't running in a live game, we can assume it is running
+	-- in a plugin context we make sure not to make any unwanted mess for the users of the plugin
+	PHANTASMFOLDER.Parent = script
+end
+
 local module = {}
 
 local MountedInterfaces = {}
@@ -37,6 +50,15 @@ function module.mountInterface(data: table | ModuleScript, parent)
 	table.insert(MountedInterfaces, newInterface)
 
 	return newInterface
+end
+
+function module.demountInterface(interface: table)
+	local index = table.find(MountedInterfaces, interface)
+
+	if index then
+		interface:Destroy()
+		table.remove(MountedInterfaces, index)
+	end
 end
 
 RunService.RenderStepped:Connect(function(dt)

@@ -1,3 +1,10 @@
+--[[
+--File Name: AnimationStack.lua
+--Author: TheGrimDeathZombie
+--Last Modified: Saturday, 15th May 2021 3:50:19 pm
+--Modified By: TheGrimDeathZombie
+--]]
+
 --- A class for handling multiple animations being played at once
 local class = {}
 class.__index = class

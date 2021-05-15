@@ -1,3 +1,10 @@
+--[[
+--File Name: Element.lua
+--Author: TheGrimDeathZombie
+--Last Modified: Saturday, 15th May 2021 3:32:47 pm
+--Modified By: TheGrimDeathZombie
+--]]
+
 local Libraries = script.Parent.Parent.Libraries
 local ObjectCache = require(Libraries.ObjectCache)
 local BoatTween = require(Libraries.BoatTween)
@@ -49,6 +56,10 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 
 	self.Object.Name = name
 	self.Name = name
+
+	if parent then
+		self.Object.Parent = (type(parent.Object) == "table" and parent.Object.Object) or (parent.Object)
+	end
 
 	-- Setup initial state animation
 	local initialProperties = {}
@@ -181,9 +192,8 @@ function class:Render()
 
 		if enteringStateAnim then
 			for otherState, animSet in pairs(self.__StateAnimations) do
-				if otherState ~= State then
-					animSet:Stop()
-				end
+				animSet:Stop()
+				animSet:Destroy()
 			end
 
 			Util:DebugPrint(string.format("Playing state animation '%s' for element '%s'", State, self.Name))
@@ -232,10 +242,8 @@ function class:Render()
 		for prop, val in pairs(combinedChanges) do
 			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, prop), val)
 			if prop == "Size" or prop == "Position" then
-				-- Skip size and position if it isn't the first render call as we already handle them above
-				if changeList.Additions[prop] == nil then
-					continue
-				end
+				-- Skip size and position as we already handle them above
+				continue
 			end
 			if typeof(self.Object[prop]) == "RBXScriptSignal" then
 				if self.Maid[prop] then
@@ -246,7 +254,7 @@ function class:Render()
 					local result = Util:GetFunction(self.Tree, val.Name)
 					if result then
 						self.Maid[prop] = self.Object[prop]:Connect(function(...)
-							result.Run(self, val.Settings, ...)
+							result.Run(self, val.Properties, ...)
 						end)
 					end
 				elseif type(val) == "function" then
@@ -258,7 +266,9 @@ function class:Render()
 				-- According to my knowledge, no known Roblox classes have table-based properties
 				-- So we can safely skip these value types, if this changes in the future this will be fixed.
 				if type(val) == "table" then continue end
-				-- If it is a UDim2 value, we convert the
+				-- If it is a UDim2 value, we convert the value use offset only
+				-- Due to the nature of ScrollingFrames, this is a hacky solution to work around them using CanvasSize
+				-- instead of the frame's size.
 				if typeof(val) == "UDim2" then
 					val = getSizeFromParent(val, self.Object.Parent)
 				end
