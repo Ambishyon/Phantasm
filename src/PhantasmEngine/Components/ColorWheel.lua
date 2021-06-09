@@ -1,10 +1,3 @@
---[[
---File Name: ColorWheel.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:47:57 pm
---Modified By: TheGrimDeathZombie
---]]
-
 local Libraries = script.Parent.Parent.Libraries
 local Util = require(Libraries.Util)
 
@@ -19,7 +12,8 @@ return {
 			Default = Color3.new(1,1,1);
 		};
 	};
-	
+
+	InitialSize = UDim2.fromOffset(150,60);
 	Icon = "";
 	Category = "Common";
 	Description = "A component that allows the user to select a color";

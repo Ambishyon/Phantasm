@@ -1,10 +1,3 @@
---[[
---File Name: AnimationSet.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:50:28 pm
---Modified By: TheGrimDeathZombie
---]]
-
 local Classes = script.Parent
 local Animator = require(Classes.Animator)
 

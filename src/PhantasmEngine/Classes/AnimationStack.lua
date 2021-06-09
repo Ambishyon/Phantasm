@@ -1,10 +1,3 @@
---[[
---File Name: AnimationStack.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:50:19 pm
---Modified By: TheGrimDeathZombie
---]]
-
 --- A class for handling multiple animations being played at once
 local class = {}
 class.__index = class
@@ -33,7 +26,7 @@ function class:Update()
 	for _, animData in pairs(self.__Stack) do
 		local isPlaying do
 			if animData.Animator.PlaybackState then
-				isPlaying = animData.Animator.PlaybackState == Enum.PlaybackState.Playing
+				isPlaying = animData.Animator.PlaybackState == Enum.PlaybackState.Playing or animData.Animator.PlaybackState == Enum.PlaybackState.Delayed
 			else
 				isPlaying = animData.Animator.Playing
 			end
@@ -45,6 +38,10 @@ function class:Update()
 				mergedResults[prop] = val
 			end
 		else
+			-- Apply its final values to the stack before removing
+			for prop, val in pairs(animData.Properties) do
+				mergedResults[prop] = val
+			end
 			-- Remove it from the stack as it is no longer playing
 			table.remove(self.__Stack, table.find(self.__Stack, animData))
 		end

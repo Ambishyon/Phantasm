@@ -19,7 +19,7 @@ return {
 	Category = "Common";
 	Description = "Fires the specified function of the element that has been specified";
 	Run = function(element, arguments)
-		local func = arguments.Element[arguments.Name]
+		local func = Util:GetElementFromPath(element:FindFirstAncestorOfClass("Interface"), arguments.Element) [arguments.Name]
 		if func then
 			func(unpack(arguments.Arguments))
 		else

@@ -1,10 +1,3 @@
---[[
---File Name: Interface.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:40:36 pm
---Modified By: TheGrimDeathZombie
---]]
-
 local Players = game:GetService("Players")
 
 local Libraries = script.Parent.Parent.Libraries
@@ -17,6 +10,18 @@ local AnimationSet = require(Classes.AnimationSet)
 local player = Players.LocalPlayer
 local class = {}
 Navigator(class)
+
+local engineProperties = {
+	Functions = true;
+	Bindings = true;
+	Elements = true;
+	Components = true;
+	Animations = true;
+}
+
+local engineDefaults = {
+	ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
+}
 
 -- MountedInterfaces
 function class.new(data: table, parent: Instance?)
@@ -49,12 +54,24 @@ function class.new(data: table, parent: Instance?)
 
 	self.Elements = Util:GenerateElements(self, data.Elements)
 
+	if parent == nil then
+		for prop, val in pairs(data) do
+			if engineProperties[prop] then continue end
+			self.Object[prop] = val
+		end
+
+		for prop, val in pairs(engineDefaults) do
+			if data[prop] then continue end
+			self.Object[prop] = val
+		end
+	end
+
 	return setmetatable(self, class)
 end
 
-function class:PlayAnimation(name)
+function class:PlayAnimation(name: string)
 	local animData = self.Animations[name]
-	assert(animData, string.format("Interface '%s' does not have an animation with the name '%s'", self.Name, name))
+	assert(animData, string.format("[PHANTASM]: Interface '%s' does not have an animation with the name '%s'", self.Name, name))
 	-- If the animation is already playing, stop and destroy it before replaying
 	self:StopAnimation(name)
 	-- Now we play the animation
@@ -64,8 +81,8 @@ function class:PlayAnimation(name)
 	end
 end
 
-function class:StopAnimation(name)
-	assert(self.Animations[name], string.format("Interface '%s' does not have an animation with the name '%s'", self.Name, name))
+function class:StopAnimation(name: string)
+	assert(self.Animations[name], string.format("[PHANTASM]: Interface '%s' does not have an animation with the name '%s'", self.Name, name))
 	if self.__Animations[name] then
 		self.__Animations[name]:Destroy()
 		self.__Animations[name] = nil
@@ -83,6 +100,10 @@ function class:Render()
 end
 
 function class:Destroy()
+	for _, v in pairs(self.__Animations) do
+		v:Destroy()
+	end
+	self.__Animations = {}
 	self.Maid:Destroy()
 	self.Data = nil
 	self.Tree = nil

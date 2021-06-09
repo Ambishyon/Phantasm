@@ -1,10 +1,3 @@
---[[
---File Name: Element.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:32:47 pm
---Modified By: TheGrimDeathZombie
---]]
-
 local Libraries = script.Parent.Parent.Libraries
 local ObjectCache = require(Libraries.ObjectCache)
 local BoatTween = require(Libraries.BoatTween)
@@ -17,8 +10,8 @@ local Animator = require(Classes.Animator)
 
 local caches = {}
 
-function getSizeFromParent(udim2: UDim2, parent: GuiBase2d)
-	return UDim2.fromOffset((udim2.X.Scale * parent.AbsoluteSize.X) + udim2.X.Offset, (udim2.Y.Scale * parent.AbsoluteSize.Y) + udim2.Y.Offset)
+function getSizeFromParent(udim2: UDim2, parent: GuiBase2d, absolute: boolean)
+	return UDim2.fromOffset((udim2.X.Scale * parent.AbsoluteSize.X) + udim2.X.Offset + (absolute and parent.AbsolutePosition.X or 0), (udim2.Y.Scale * parent.AbsoluteSize.Y) + udim2.Y.Offset + (absolute and parent.AbsolutePosition.Y or 0))
 end
 
 local class = {}
@@ -50,6 +43,7 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 
 	self.StateAnimations = {}
 	self.__Bindings = {}
+	self.__OriginalProperties = {}
 
 	self.Object = caches[self.ClassName]:GetObject()
 	self.Maid = Maid.new()
@@ -141,6 +135,20 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 end
 
 function class:Render()
+	local parent do
+		if self.Parent:IsA("Element") then
+			parent = self.Parent.Object
+		else
+			parent = self.Parent
+		end
+	end
+	-- Setup initial properties to reset once the element is destroyed
+	for prop, _ in pairs(self.Properties) do
+		if self.__OriginalProperties[prop] == nil then
+			self.__OriginalProperties[prop] = self.Object[prop]
+		end
+	end
+
 	-- Update bindings
 	for prop, val in pairs(self.Properties) do
 		if type(val) == "table" and val.Type == "Binding" then
@@ -149,7 +157,7 @@ function class:Render()
 				local result = binding(self, val.Settings, prop)
 				if self.__Bindings[prop] ~= result then
 					if typeof(result) == "UDim2" then
-						result = getSizeFromParent(result, self.Object.Parent)
+						result = getSizeFromParent(result, parent)
 					end
 					self.__Bindings[prop] = result
 					self.Object[prop] = result
@@ -172,7 +180,7 @@ function class:Render()
 		end
 	end
 
-	-- Play the appropriate state animation
+	-- Play the appropriate state animation and/or sound if present
 	if self.State ~= State then
 		Util:DebugPrint(string.format("Element '%s' has entered state '%s' from state '%s'", self.Name, State, self.State))
 		local enteringSound = self.Sounds[State]
@@ -181,30 +189,48 @@ function class:Render()
 			for prop, val in pairs(enteringSound) do
 				sound[prop] = val
 			end
-			sound.Ended:Connect(sound.Destroy)
+			sound.Ended:Connect(function()
+				sound:Destroy()
+			end)
 			sound.Parent = workspace
 
 			Util:DebugPrint(string.format("Playing state sound '%s' for element '%s'", State, self.Name))
 			sound:Play()
 		end
 
-		local enteringStateAnim = self.StateAnimations[State]
+		local leavingStateAnimation = self.StateAnimations[self.State]
+		if leavingStateAnimation then
+			local enteringStateAnim = self.StateAnimations[State]
 
-		if enteringStateAnim then
-			for otherState, animSet in pairs(self.__StateAnimations) do
-				animSet:Stop()
-				animSet:Destroy()
+			if enteringStateAnim then
+				local animToUse = enteringStateAnim
+
+				if State == "Normal" then
+					animToUse = Util:DeepCopy(enteringStateAnim)
+					local newGoal = {}
+
+					for prop, val in pairs(leavingStateAnimation.Goal) do
+						newGoal[prop] = animToUse.Goal[prop]
+					end
+
+					animToUse.Goal = newGoal
+				end
+
+				for _, animSet in pairs(self.__StateAnimations) do
+					animSet:Stop()
+					animSet:Destroy()
+				end
+
+				Util:DebugPrint(string.format("Playing state animation '%s' for element '%s'", State, self.Name))
+				local properties = Util:DeepCopy(rawget(self, "Properties"))
+				local newStateTween = BoatTween:Create(properties, animToUse)
+				self.__StateAnimations[State] = newStateTween
+				-- Add the state animation to the bottom of the stack (actual animations should take precedence over state-based ones)
+				self.AnimationStack:AddToStack({
+					Animator = newStateTween;
+					Properties = properties;
+				}, 0)
 			end
-
-			Util:DebugPrint(string.format("Playing state animation '%s' for element '%s'", State, self.Name))
-			local properties = Util:DeepCopy(rawget(self, "Properties"))
-			local newStateTween = BoatTween:Create(properties, enteringStateAnim)
-			self.__StateAnimations[State] = newStateTween
-			-- Add the state animation to the bottom of the stack (actual animations should take precedence over state-based ones)
-			self.AnimationStack:AddToStack({
-				Animator = newStateTween;
-				Properties = properties;
-			}, 0)
 		end
 	end
 
@@ -217,14 +243,14 @@ function class:Render()
 	-- Update Size
 	if self.Object:IsA"GuiObject" and self.Properties.Size then
 		if typeof(self.Properties.Size) == "UDim2" then
-			self.Object.Size = getSizeFromParent(self.Properties.Size, self.Object.Parent)
+			self.Object.Size = getSizeFromParent(self.Properties.Size, parent)
 		end
 	end
 
 	-- Update Position
 	if self.Object:IsA"GuiObject" and self.Properties.Position then
 		if typeof(self.Properties.Position) == "UDim2" then
-			self.Object.Position = getSizeFromParent(self.Properties.Position, self.Object.Parent)
+			self.Object.Position = getSizeFromParent(self.Properties.Position, parent, self.Object.Parent == self.Tree.OverlayGUI)
 		end
 	end
 
@@ -243,6 +269,7 @@ function class:Render()
 			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, prop), val)
 			if prop == "Size" or prop == "Position" then
 				-- Skip size and position as we already handle them above
+				self.__Properties[prop] = type(val) == "table" and Util:DeepCopy(val) or val
 				continue
 			end
 			if typeof(self.Object[prop]) == "RBXScriptSignal" then
@@ -258,24 +285,30 @@ function class:Render()
 						end)
 					end
 				elseif type(val) == "function" then
-					self.Maid[prop] = self.Object[prop]:Connect(val)
+					-- If it is a function or this isn't the first iteration, we
+					-- Don't apply the change as we can be 99% certain it is
+					-- The same one from before.
+					if type(self.__Properties[prop]) ~= "function" then
+						self.Maid[prop] = self.Object[prop]:Connect(val)
+					end
 				else
 					warn(string.format("Failed to connect event for '%s': expected a function or a reference to an engine function, got '%s' instead.", prop, typeof(val)))
 				end
 			else
 				-- According to my knowledge, no known Roblox classes have table-based properties
-				-- So we can safely skip these value types, if this changes in the future this will be fixed.
+				-- So we can safely skip these value types, if this changes in the future this
+				-- will be fixed.
 				if type(val) == "table" then continue end
 				-- If it is a UDim2 value, we convert the value use offset only
-				-- Due to the nature of ScrollingFrames, this is a hacky solution to work around them using CanvasSize
-				-- instead of the frame's size.
+				-- Due to the nature of ScrollingFrames, this is a hacky solution to work around them
+				-- using CanvasSize instead of the frame's size.
 				if typeof(val) == "UDim2" then
-					val = getSizeFromParent(val, self.Object.Parent)
+					val = getSizeFromParent(val, parent)
 				end
 				self.Object[prop] = val
 			end
-		end
-		self.__Properties = Util:DeepCopy(self.Properties)
+			self.__Properties[prop] = type(val) == "table" and Util:DeepCopy(val) or val
+ 		end
 	end
 
 	-- Render all children
@@ -324,6 +357,11 @@ function class:Destroy()
 	end
 
 	self.Maid:DoCleaning()
+
+	for prop, val in pairs(self.__OriginalProperties) do
+		self.Object[prop] = val
+	end
+
 	caches[self.ClassName]:ReturnObject(self.Object)
 	self.Object = nil
 end

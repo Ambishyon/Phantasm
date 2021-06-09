@@ -1,10 +1,3 @@
---[[
---File Name: Navigator.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:50:07 pm
---Modified By: TheGrimDeathZombie
---]]
-
 local Libraries = script.Parent.Parent.Libraries
 local Util
 
@@ -158,11 +151,12 @@ return function(object)
 	end
 
 	object.__index = function(self, what)
-		local Children, Properties, Component, Object, Name = (rawget(self, "Children") or rawget(self, "Elements")),
+		local Children, Properties, Component, Object, Name, Elements = (rawget(self, "Children") or rawget(self, "Elements")),
 			rawget(self, "Properties"),
 			rawget(self, "Component"),
 			rawget(self, "Object"),
-			rawget(self, "Name")
+			rawget(self, "Name"),
+			rawget(self, "Elements")
 
 		-- Initial check to see if there is an artifical instance function
 		local result = class[what]
@@ -184,13 +178,34 @@ return function(object)
 			end
 		end
 
-		if result == nil and Object then
+		if result == nil and Component and Component.Properties then
+			local propExists = Component.Properties[what] ~= nil
+			if propExists and Properties[what] == nil then
+				return Properties[what]
+			end
+		end
+
+		if result == nil and Object and not Component then
 			-- It's an element so we directly grab the property from the actual instance
 			result = Object[what]
 		end
-	
+
 		if result == nil and Properties then
 			result = Properties[what]
+
+			if result and Component then
+				if typeof(result) == "function" then
+					result = result(self, {}, what)
+				elseif typeof(result) == "table" and result.Type == "Binding" then
+					local binding = Util:GetBinding(self.Tree, result.Name)
+					if binding then
+						result = binding(self.Tree, {}, what)
+					else
+						error(string.format("[PHANTASM]: %s is not a valid binding for property '%s' of %s", result.Name, what, Name))
+					end
+				end
+			end
+
 			if result == nil and Object then
 				result = Object[what]
 				if Children[what] and Children[what].Object == result then
@@ -198,9 +213,13 @@ return function(object)
 				end
 			end
 		end
-		
+
 		if result == nil then
 			result = Children[what]
+		end
+
+		if Elements and result == nil then
+			result = Elements[what]
 		end
 
 		assert(result, string.format("%s is not a valid member of %s", what, Name))

@@ -2,8 +2,12 @@
   "name": "Phantasm-UI-Engine",
   "tree": {
     "$className": "DataModel",
-    "Phantasm": {
-      "$path": "src"
-    }
+    
+	"ReplicatedStorage": {
+		"$className": "ReplicatedStorage",
+		"Phantasm": {
+			"$path": "src"
+		}
+	}
   }
 }

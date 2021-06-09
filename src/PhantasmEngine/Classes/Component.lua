@@ -1,7 +1,7 @@
 --[[
 --File Name: Component.lua
 --Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:45:53 pm
+--Last Modified: Tuesday, May 18th 2021, 10:33:39 am
 --Modified By: TheGrimDeathZombie
 --]]
 
@@ -37,6 +37,8 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 		self.Properties = {}
 		self.Component = {
 			Constructor = data;
+			Properties = {};
+			Functions = {};
 		}
 		self.Object = Element.new(name, {
 			ClassName = "Frame";
@@ -58,11 +60,27 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 				Position = self.Properties.Position or UDim2.new();
 			};
 		}, tree, parent)
+
+		for prop, val in pairs(self.Component.Properties) do
+			if self.Properties[prop] == nil then
+				self.Properties[prop] = val.Default
+			else
+				if typeof(self.Properties[prop]) == "table" and typeof(val.Default) == "table" then
+					self.Properties[prop] = Util:CombineTables(val.Default, self.Properties[prop])
+				end
+			end
+		end
 	end
-	
+
 	self.Name = name
 
-	return setmetatable(self, class)
+	setmetatable(self, class)
+
+	if self.Component.Init then
+		self.Component.Init(self, self.Context, self.Tree.Context)
+	end
+
+	return self
 end
 
 function class:PlayAnimation(name)
@@ -99,18 +117,30 @@ function class:Render()
 	local constructor = component.Constructor
 
 	if component.PreRender then
-		component.PreRender(self.Properties, self.Context, self.Tree.Context)
+		component.PreRender(self, self.Context, self.Tree.Context)
 	end
 
-	local data = type(constructor) == "table" and constructor or constructor(self.Properties, self.Context, self.Tree.Context)
+	local data = type(constructor) == "table" and constructor or constructor(self, self.Context, self.Tree.Context)
 
 	local function traverseTree(tree, parent)
 		for name, element in pairs(parent.Children) do
 			if tree.Children[name] then
-				-- The element's properties has changed
+				-- Has the element's properties changed?
+				local originalProperties = element.Data.Properties or {}
 				local treeElement = tree.Children[name]
-				for prop, val in pairs(treeElement.Properties) do
-					element.Properties[prop] = val
+				if not Util:CompareTables(originalProperties, treeElement.Properties) then
+					-- It has changed, update the element
+					local diff = Util:GenerateDifferences(originalProperties, treeElement.Properties)
+					for prop, val in pairs(Util:CombineTables(diff.Additions, diff.Changes)) do
+						-- Skip an event property if there is already a function generated for it
+						-- as we can be certain it is just the same function as before.
+						if type(element.Properties[prop]) == "function" then
+							continue
+						end
+						Util:DebugPrint(string.format("Property '%s' of component element '%s' changed to '%s'", prop, name, tostring(val)))
+						element.Properties[prop] = val
+					end
+					element.Data.Properties = treeElement.Properties
 				end
 				-- Has the element's class changed?
 				if element.ClassName ~= treeElement.ClassName then
@@ -147,6 +177,11 @@ function class:Render()
 			-- The element's properties has changed
 			local treeElement = data[name]
 			for prop, val in pairs(treeElement.Properties) do
+				-- Skip an event property if there is already a function generated for it
+				-- as we can be certain it is just the same function as before.
+				if type(element.Properties[prop]) == "function" then
+					continue
+				end
 				element.Properties[prop] = val
 			end
 			-- The element's animations may have changed
@@ -194,6 +229,9 @@ function class:Render()
 		end
 	end
 
+	-- Render container
+	self.Object:Render()
+
 	-- Render all children
 	for _, child in pairs(self.Children) do
 		child:Render()
@@ -205,7 +243,7 @@ function class:Render()
 	end
 
 	if component.PostRender then
-		component.PostRender(self.Properties, self.Context, self.Tree.Context)
+		component.PostRender(self, self.Context, self.Tree.Context)
 	end
 end
 
@@ -216,7 +254,17 @@ function class:IsA(name)
 end
 
 function class:Destroy()
+	if self.Component.Cleanup then
+		self.Component.Cleanup(self, self.Context, self.Tree.Context)
+	end
+	for _, v in pairs(self.__Animations) do
+		v:Destroy()
+	end
+	self.__Animations = {}
 	for _, element in pairs(self.Children) do
+		element:Destroy()
+	end
+	for _, element in pairs(self.Elements) do
 		element:Destroy()
 	end
 end
