@@ -1,18 +1,15 @@
---[[
---File Name: init.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:45:37 pm
---Modified By: TheGrimDeathZombie
---]]
+-- Check if another module has already loaded Phantasm before, if so, return
+-- that instead to prevent multiple from running at once.
+if _G.Phantasm then
+	return _G.Phantasm
+end
 
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Libraries = script.Libraries
 local Classes = script.Classes
-local Element = require(Classes.Element)
 local Interface = require(Classes.Interface)
-local Maid = require(Classes.Maid)
 local Util = require(Libraries.Util)
 local Interpreter = require(Libraries.Interpeter)
 local Globals = require(script.Globals)
@@ -66,6 +63,8 @@ RunService.RenderStepped:Connect(function(dt)
 		interface:Render()
 	end
 end)
+
+_G.Phantasm = module
 
 print("----------------------------------------------------------------")
 print(string.format("This game is running Phantasm V%s by TheGrimDeathZombie/Reapimus", Globals.VERSION))

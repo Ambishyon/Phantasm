@@ -206,14 +206,20 @@ function class:Render()
 				local animToUse = enteringStateAnim
 
 				if State == "Normal" then
-					animToUse = Util:DeepCopy(enteringStateAnim)
+					animToUse = Util:DeepCopy(self.StateAnimations.Normal)
 					local newGoal = {}
 
 					for prop, val in pairs(leavingStateAnimation.Goal) do
-						newGoal[prop] = animToUse.Goal[prop]
+						newGoal[prop] = enteringStateAnim.Goal[prop]
 					end
 
 					animToUse.Goal = newGoal
+				else
+					for prop, val in pairs(enteringStateAnim.Goal) do
+						if self.StateAnimations.Normal.Goal[prop] == nil then
+							self.StateAnimations.Normal.Goal[prop] = val
+						end
+					end
 				end
 
 				for _, animSet in pairs(self.__StateAnimations) do
@@ -259,6 +265,9 @@ function class:Render()
 		self.__Properties = {}
 	end
 
+	if self.Name == "Slider" then
+		Util:DebugPrint(self.__Properties, self.Properties)
+	end
 	if not Util:CompareTables(self.__Properties, self.Properties) then
 		Util:DebugPrint(string.format("Element '%s' has changed.", self.Name))
 		local changeList = Util:GenerateDifferences(self.__Properties, self.Properties)

@@ -48,6 +48,8 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 				Position = UDim2.new();
 			};
 		}, tree, parent)
+
+		self.Visible = true
 	else
 		self.Animations = data.Animations or {}
 		self.Properties = data.Properties
@@ -70,6 +72,8 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 				end
 			end
 		end
+
+		self.Visible = (data.Visible ~= nil and data.Visible) or (data.Visible == nil and true)
 	end
 
 	self.Name = name
@@ -187,7 +191,16 @@ function class:Render()
 			-- The element's animations may have changed
 			if treeElement.StateAnimations then
 				for state, anim in pairs(treeElement.StateAnimations) do
-					element.StateAnimations[state] = anim
+					if state == "Normal" then
+						-- Normal state requires special behavior due to how it functions
+						for i, v in pairs(anim) do
+							if i ~= "Goal" then
+								element.StateAnimations[state][i] = v
+							end
+						end
+					else
+						element.StateAnimations[state] = anim
+					end
 				end
 			else
 				element.StateAnimations = {}
@@ -228,6 +241,9 @@ function class:Render()
 			self.Elements[name] = element
 		end
 	end
+
+	-- Update container visiblity
+	self.Object.Visible = self.Visible
 
 	-- Render container
 	self.Object:Render()

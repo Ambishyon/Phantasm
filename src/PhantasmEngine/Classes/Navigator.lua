@@ -193,7 +193,7 @@ return function(object)
 		if result == nil and Properties then
 			result = Properties[what]
 
-			if result and Component then
+			if result ~= nil and Component then
 				if typeof(result) == "function" then
 					result = result(self, {}, what)
 				elseif typeof(result) == "table" and result.Type == "Binding" then
@@ -222,7 +222,7 @@ return function(object)
 			result = Elements[what]
 		end
 
-		assert(result, string.format("%s is not a valid member of %s", what, Name))
+		assert(result ~= nil, string.format("%s is not a valid member of %s", what, Name))
 		return result
 	end
 

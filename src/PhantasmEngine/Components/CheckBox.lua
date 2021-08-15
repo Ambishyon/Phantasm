@@ -1,10 +1,3 @@
---[[
---File Name: CheckBox.lua
---Author: TheGrimDeathZombie
---Last Modified: Saturday, 15th May 2021 3:48:49 pm
---Modified By: TheGrimDeathZombie
---]]
-
 local Libraries = script.Parent.Parent.Libraries
 local Util = require(Libraries.Util)
 
@@ -18,34 +11,54 @@ return {
 			Type = "boolean";
 			Default = false;
 		};
+
 		Appearance = {
-			Type = "Dictionary";
+			Type = "Properties";
+			ClassName = "ImageButton";
 			Default = {
-				Image = "";
-				ImageColor3 = Color3.new(1,1,1);
-				ImageRectSize = Rect.new();
-				ScaleType = Enum.ScaleType.Stretch;
-				Size = UDim2.new(1,0,1,0);
+				Image = "rbxassetid://6939335665";
+				ImageColor3 = Color3.fromRGB(49, 49, 49);
+				BackgroundTransparency = 1;
 			};
 		};
+		HoverAppearance = {
+			Type = "Properties";
+			ClassName = "ImageButton";
+			Default = {
+				ImageColor3 = Color3.fromRGB(65, 65, 65);
+			};
+		};
+		PressedAppearance = {
+			Type = "Properties";
+			ClassName = "ImageButton";
+			Default = {
+				ImageColor3 = Color3.fromRGB(17, 17, 17);
+			};
+		};
+
 		TickAppearance = {
-			Type = "Dictionary";
+			Type = "Properties";
+			ClassName = "ImageLabel";
 			Default = {
-				Image = "";
-				ImageColor3 = Color3.new(1,1,1);
-				ImageRectSize = Rect.new();
-				ScaleType = Enum.ScaleType.Stretch;
-				Size = UDim2.new(0.9,0,.9,0);
+				Image = "rbxassetid://6939335907";
+				ImageColor3 = Color3.fromRGB(255, 255, 255);
+				BackgroundTransparency = 1;
 			};
 		};
-		DisabledAppearance = {
-			Type = "Dictionary";
+
+		DisabledTickAppearance = {
+			Type = "Properties";
+			ClassName = "ImageLabel";
 			Default = {
-				Image = "";
-				ImageColor3 = Color3.new(1,1,1);
-				ImageRectSize = Rect.new();
-				ScaleType = Enum.ScaleType.Stretch;
-				Size = UDim2.new(0,10,.7,0);
+				ImageColor3 = Color3.fromRGB(182, 182, 182);
+			};
+		};
+
+		DisabledAppearance = {
+			Type = "Properties";
+			ClassName = "ImageButton";
+			Default = {
+				ImageColor3 = Color3.fromRGB(44, 44, 44);
 			};
 		};
 	};
@@ -54,7 +67,44 @@ return {
 	Category = "Common";
 	Description = "A component that allows the user to turn something on or off";
 
-	Constructor = function(properties, context, interfaceContext)
-		
+	Constructor = function(self, context, interfaceContext)
+		return {
+			Button = {
+				ClassName = "ImageButton";
+				Properties = Util:CombineTables(Util:CombineTables(self.Appearance, self.Disabled and self.DisabledAppearance or {}), {
+					Size = UDim2.fromScale(1,1);
+					Activated = function()
+						if self.Disabled then return end
+						self.Value = not self.Value
+					end;
+				});
+				StateAnimations = self.Disabled and {
+					Normal = {
+						Time = .001;
+					};
+				} or {
+					Normal = {
+						Time = .001;
+					};
+					Hover = {
+						Time = .001;
+						Goal = self.HoverAppearance;
+					};
+					Pressed = {
+						Time = .001;
+						Goal = self.PressedAppearance;
+					};
+				};
+				Children = {
+					Tick = {
+						ClassName = "ImageLabel";
+						Properties = Util:CombineTables(Util:CombineTables(self.TickAppearance, self.Disabled and self.DisabledTickAppearance or {}), {
+							Size = UDim2.fromScale(1,1);
+							Visible = self.Value;
+						});
+					};
+				};
+			};
+		}
 	end;
 }

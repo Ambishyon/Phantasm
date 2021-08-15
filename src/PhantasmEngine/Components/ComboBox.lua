@@ -14,7 +14,7 @@ return {
 				"No";
 			};
 		};
-		Chosen = {
+		Value = {
 			Type = "string";
 			Default = nil;
 		};
@@ -27,26 +27,32 @@ return {
 			Type = "Properties";
 			ClassName = "ImageButton";
 			Default = {
-				Image = "";
-				AutoButtonColor = false;
-				BackgroundColor3 = Color3.fromRGB(39, 39, 39);
-				BorderColor3 = Color3.fromRGB(27, 27, 27);
+				Image = "rbxassetid://6939334639";
+				ImageColor3 = Color3.fromRGB(49, 49, 49);
+				BackgroundTransparency = 1;
+				ScaleType = Enum.ScaleType.Slice;
+				SliceCenter = Rect.new(3, 3, 147, 147);
 			};
 		};
 		HoverAppearance = {
 			Type = "Properties";
 			ClassName = "ImageButton";
 			Default = {
-				Image = "";
-				BackgroundColor3 = Color3.fromRGB(65, 65, 65);
+				ImageColor3 = Color3.fromRGB(65, 65, 65);
 			};
 		};
 		PressedAppearance = {
 			Type = "Properties";
 			ClassName = "ImageButton";
 			Default = {
-				Image = "";
-				BackgroundColor3 = Color3.fromRGB(17, 17, 17);
+				ImageColor3 = Color3.fromRGB(17, 17, 17);
+			};
+		};
+		DisabledAppearance = {
+			Type = "Properties";
+			ClassName = "ImageButton";
+			Default = {
+				ImageColor3 = Color3.fromRGB(22, 22, 22);
 			};
 		};
 
@@ -64,6 +70,17 @@ return {
 			ClassName = "TextButton";
 			Default = {
 				BackgroundTransparency = .8;
+			};
+		};
+
+		FontPadding = {
+			Type = "Properties";
+			ClassName = "UIPadding";
+			Default = {
+				PaddingLeft = UDim.new(0, 3);
+				PaddingRight = UDim.new(0, 3);
+				PaddingBottom = UDim.new();
+				PaddingTop = UDim.new();
 			};
 		};
 
@@ -90,7 +107,7 @@ return {
 			Type = "Properties";
 			ClassName = "ImageLabel";
 			Default = {
-				Image = "";
+				Image = "rbxassetid://6939334974";
 				BackgroundTransparency = 1;
 				Size = UDim2.new(.1,0,.9);
 			};
@@ -100,7 +117,7 @@ return {
 			Type = "Properties";
 			ClassName = "ImageLabel";
 			Default = {
-				Image = "";
+				Image = "rbxassetid://6939335229";
 				BackgroundTransparency = 1;
 				Size = UDim2.new(.1,0,.9);
 			};
@@ -110,9 +127,11 @@ return {
 			Type = "Properties";
 			ClassName = "ImageLabel";
 			Default = {
-				Image = "";
-				BackgroundColor3 = Color3.fromRGB(39, 39, 39);
-				BorderColor3 = Color3.fromRGB(27, 27, 27);
+				Image = "rbxassetid://6939334639";
+				ImageColor3 = Color3.fromRGB(39, 39, 39);
+				BackgroundTransparency = 1;
+				ScaleType = Enum.ScaleType.Slice;
+				SliceCenter = Rect.new(3, 3, 147, 147);
 			};
 		};
 
@@ -142,12 +161,12 @@ return {
 	end;
 
 	PreRender = function(self, context, interfaceContext)
-		if not table.find(self.Options, self.Chosen) then
-			self.Chosen = self.Options[1]
+		if not table.find(self.Options, self.Value) then
+			self.Value = self.Options[1]
 		end
 	end;
 
-	Constructor = function(properties, context, interfaceContext)
+	Constructor = function(self, context, interfaceContext)
 		local totalSize = 0
 		local buttons = {
 			{
@@ -156,31 +175,37 @@ return {
 			};
 		}
 
-		for i, choice in pairs(properties.Options) do
-			local calculatedSize = TextService:GetTextSize(choice, properties.Font.TextSize or 14, properties.Font.Font or Enum.Font.SourceSans, Vector2.new(properties.Object.AbsoluteSize.X,math.huge))
+		for i, choice in pairs(self.Options) do
+			local calculatedSize = TextService:GetTextSize(choice, self.Font.TextSize or 14, self.Font.Font or Enum.Font.SourceSans, Vector2.new(self.Object.AbsoluteSize.X,math.huge))
 			totalSize += calculatedSize.Y
 
 			local btn = {
 				ClassName = "TextButton";
-				Properties = Util:CombineTables(Util:CombineTables(properties.Font, {
+				Properties = Util:CombineTables(Util:CombineTables(self.Font, {
 					Size = UDim2.new(1,0,0,calculatedSize.Y+4);
 					Text = choice;
 					LayoutOrder = i;
 					Activated = function()
-						properties.Chosen = choice
+						self.Value = choice
 						interfaceContext.OpenDropdown = nil
 					end;
-				}), properties.ButtonAppearance or {
+				}), self.ButtonAppearance or {
 					BackgroundTransparency = 1;
 					BackgroundColor3 = Color3.fromRGB(255,255,255);
 				});
+				Children = {
+					Padding = {
+						ClassName = "UIPadding";
+						Properties = self.FontPadding;
+					};
+				};
 				StateAnimations = {
 					Normal = {
 						Time = .001;
 					};
 					Hover = {
 						Time = .001;
-						Goal = properties.ButtonHoverAppearance or {
+						Goal = self.ButtonHoverAppearance or {
 							BackgroundTransparency = .9;
 						};
 					};
@@ -193,24 +218,31 @@ return {
 		return {
 			Button = {
 				ClassName = "ImageButton";
-				Properties = Util:CombineTables(properties.Appearance, {
+				Properties = Util:CombineTables(Util:CombineTables(self.Appearance, self.Disabled and self.DisabledAppearance or {}), {
 					Size = UDim2.fromScale(1,1);
 					Activated = function()
-						interfaceContext.OpenDropdown = (interfaceContext.OpenDropdown == properties and nil) or (interfaceContext.OpenDropdown ~= properties and properties)
+						if self.Disabled then return end
+						interfaceContext.OpenDropdown = (interfaceContext.OpenDropdown == self and nil) or (interfaceContext.OpenDropdown ~= self and self)
 					end;
 				});
 				Children = {
 					Label = {
 						ClassName = "TextLabel";
-						Properties = Util:CombineTables(properties.Font, {
-							Text = properties.Chosen;
+						Properties = Util:CombineTables(self.Font, {
+							Text = self.Value;
 							Size = UDim2.fromScale(1,1);
 							BackgroundTransparency = 1;
 						});
+						Children = {
+							Padding = {
+								ClassName = "UIPadding";
+								Properties = self.FontPadding;
+							};
+						};
 					};
 					Arrow = {
 						ClassName = "ImageLabel";
-						Properties = Util:CombineTables(interfaceContext.OpenDropdown == properties and properties.ArrowUp or properties.ArrowDown, {
+						Properties = Util:CombineTables(interfaceContext.OpenDropdown == self and self.ArrowUp or self.ArrowDown, {
 							AnchorPoint = Vector2.new(1,.5);
 							Position = UDim2.fromScale(.98,.5);
 							BackgroundTransparency = 1
@@ -223,36 +255,36 @@ return {
 						};
 					};
 				};
-				StateAnimations = {
+				StateAnimations = self.Disabled and {
+					Normal = {
+						Time = .001;
+					};
+				} or {
 					Normal = {
 						Time = .001;
 					};
 					Hover = {
 						Time = .001;
-						Goal = properties.HoverAppearance or {
-							BackgroundTransparency = .9;
-						};
+						Goal = self.HoverAppearance;
 					};
 					Pressed = {
 						Time = .001;
-						Goal = properties.PressedAppearance or {
-							BackgroundTransparency = .9;
-						};
+						Goal = self.PressedAppearance;
 					};
 				};
 			};
 			Dropdown = {
 				Overlay = true;
 				ClassName = "ImageLabel";
-				Properties = Util:CombineTables(properties.DropdownAppearance, {
+				Properties = Util:CombineTables(self.DropdownAppearance, {
 					Size = UDim2.new(1,0,0,math.min(totalSize, 40));
 					Position = UDim2.fromScale(0,1);
-					Visible = interfaceContext.OpenDropdown == properties;
+					Visible = (not self.Disabled and interfaceContext.OpenDropdown == self);
 				});
 				Children = {
 					Scroller = {
 						ClassName = "ScrollingFrame";
-						Properties = Util:CombineTables(properties.ScrollbarAppearance, {
+						Properties = Util:CombineTables(self.ScrollbarAppearance, {
 							AutomaticCanvasSize = Enum.AutomaticSize.Y;
 							BackgroundTransparency = 1;
 							Position = UDim2.fromScale(.5,.5);
