@@ -17,6 +17,7 @@ local engineProperties = {
 	Elements = true;
 	Components = true;
 	Animations = true;
+	Theme = true;
 }
 
 local engineDefaults = {
@@ -37,8 +38,9 @@ function class.new(data: table, parent: Instance?)
 	self.Functions = data.Functions or {}
 	self.Bindings = data.Bindings or {}
 	self.Animations = data.Animations or {}
+	self.Theme = data.Theme or {}
 
-	self.__Animations = nil
+	self.__Animations = {}
 
 	self.Context = {}
 
@@ -55,18 +57,26 @@ function class.new(data: table, parent: Instance?)
 	self.Elements = Util:GenerateElements(self, data.Elements)
 
 	if parent == nil then
-		for prop, val in pairs(data) do
-			if engineProperties[prop] then continue end
+		for prop, val in pairs(engineDefaults) do
+			if data[prop] ~= nil then continue end
 			self.Object[prop] = val
 		end
 
-		for prop, val in pairs(engineDefaults) do
-			if data[prop] then continue end
+		for prop, val in pairs(data) do
+			if engineProperties[prop] then continue end
 			self.Object[prop] = val
 		end
 	end
 
 	return setmetatable(self, class)
+end
+
+function class:GetElementTree()
+
+end
+
+function class:GetAnimationState()
+	
 end
 
 function class:PlayAnimation(name: string)
@@ -103,11 +113,14 @@ function class:Destroy()
 	for _, v in pairs(self.__Animations) do
 		v:Destroy()
 	end
-	self.__Animations = {}
+	rawset(self, "__Animations", nil)
 	self.Maid:Destroy()
-	self.Data = nil
-	self.Tree = nil
-	if not self.__HadParent then
+	for _, v in pairs(self.Elements) do
+		v:Destroy()
+	end
+	rawset(self, "Data", nil)
+	rawset(self, "Tree", nil)
+	if not rawget(self, "__HadParent") then
 		self.Object:Destroy()
 	else
 		self.OverlayGUI:Destroy()

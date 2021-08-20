@@ -149,12 +149,36 @@ function class:Render()
 		end
 	end
 
+	-- Update theme properties
+	local theme = self.Theme or self.Tree.Theme
+	if theme then
+		local themeData
+		if type(theme) == "string" then
+			themeData = Util:GetTheme(theme)
+		else
+			themeData = theme
+		end
+
+		if themeData[self.ClassName] then
+			self.__ThemeProperties = themeData[self.ClassName]
+			for prop, _ in pairs(themeData[self.ClassName]) do
+				if self.__OriginalProperties[prop] == nil then
+					self.__OriginalProperties[prop] = self.Object[prop]
+				end
+			end
+		else
+			self.__ThemeProperties = {}
+		end
+	else
+		self.__ThemeProperties = {}
+	end
+
 	-- Update bindings
 	for prop, val in pairs(self.Properties) do
 		if type(val) == "table" and val.Type == "Binding" then
 			local binding = Util:GetBinding(self.Tree, val.Name)
 			if binding then
-				local result = binding(self, val.Settings, prop)
+				local result = binding(self, val.Properties, prop)
 				if self.__Bindings[prop] ~= result then
 					if typeof(result) == "UDim2" then
 						result = getSizeFromParent(result, parent)
@@ -222,9 +246,10 @@ function class:Render()
 					end
 				end
 
-				for _, animSet in pairs(self.__StateAnimations) do
+				for i, animSet in pairs(self.__StateAnimations) do
 					animSet:Stop()
 					animSet:Destroy()
+					self.__StateAnimations[i] = nil
 				end
 
 				Util:DebugPrint(string.format("Playing state animation '%s' for element '%s'", State, self.Name))
@@ -235,7 +260,8 @@ function class:Render()
 				self.AnimationStack:AddToStack({
 					Animator = newStateTween;
 					Properties = properties;
-				}, 0)
+					What = State;
+				}, 1)
 			end
 		end
 	end
@@ -265,28 +291,27 @@ function class:Render()
 		self.__Properties = {}
 	end
 
-	if self.Name == "Slider" then
-		Util:DebugPrint(self.__Properties, self.Properties)
-	end
-	if not Util:CompareTables(self.__Properties, self.Properties) then
+	if not Util:CompareTables(self.__Properties, Util:CombineTables(self.__ThemeProperties, self.Properties)) then
 		Util:DebugPrint(string.format("Element '%s' has changed.", self.Name))
-		local changeList = Util:GenerateDifferences(self.__Properties, self.Properties)
+		local changeList = Util:GenerateDifferences(self.__Properties, Util:CombineTables(self.__ThemeProperties, self.Properties))
 
 		local combinedChanges = Util:CombineTables(changeList.Changes, changeList.Additions)
 
 		for prop, val in pairs(combinedChanges) do
-			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, prop), val)
 			if prop == "Size" or prop == "Position" then
 				-- Skip size and position as we already handle them above
 				self.__Properties[prop] = type(val) == "table" and Util:DeepCopy(val) or val
 				continue
 			end
+
+			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, prop), val)
+
 			if typeof(self.Object[prop]) == "RBXScriptSignal" then
-				if self.Maid[prop] then
-					self.Maid[prop] = nil
-				end
 				if type(val) == "table" then
 					-- It's a preset function, get the actual function
+					if self.Maid[prop] then
+						self.Maid[prop] = nil
+					end
 					local result = Util:GetFunction(self.Tree, val.Name)
 					if result then
 						self.Maid[prop] = self.Object[prop]:Connect(function(...)
@@ -298,6 +323,9 @@ function class:Render()
 					-- Don't apply the change as we can be 99% certain it is
 					-- The same one from before.
 					if type(self.__Properties[prop]) ~= "function" then
+						if self.Maid[prop] then
+							self.Maid[prop] = nil
+						end
 						self.Maid[prop] = self.Object[prop]:Connect(val)
 					end
 				else
@@ -308,7 +336,7 @@ function class:Render()
 				-- So we can safely skip these value types, if this changes in the future this
 				-- will be fixed.
 				if type(val) == "table" then continue end
-				-- If it is a UDim2 value, we convert the value use offset only
+				-- If it is a UDim2 value, we convert the value to use offset only
 				-- Due to the nature of ScrollingFrames, this is a hacky solution to work around them
 				-- using CanvasSize instead of the frame's size.
 				if typeof(val) == "UDim2" then
@@ -316,14 +344,26 @@ function class:Render()
 				end
 				self.Object[prop] = val
 			end
+
 			self.__Properties[prop] = type(val) == "table" and Util:DeepCopy(val) or val
  		end
+
+		 for _, prop in pairs(changeList.Deletions) do
+			if self.__OriginalProperties[prop] then
+				self.Object[prop] = self.__OriginalProperties[prop]
+			end
+			self.__Properties[prop] = nil
+		 end
 	end
 
 	-- Render all children
 	for _, child in pairs(self.Children) do
 		child:Render()
 	end
+end
+
+function class:GetAnimationState()
+	
 end
 
 function class:PlayAnimation(name)
@@ -368,6 +408,7 @@ function class:Destroy()
 	self.Maid:DoCleaning()
 
 	for prop, val in pairs(self.__OriginalProperties) do
+		if typeof(self.Object[prop]) == "RBXScriptSignal" then continue end
 		self.Object[prop] = val
 	end
 

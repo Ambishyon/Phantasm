@@ -11,6 +11,10 @@ local GuiWhitelist = {
 	RootLocalizationTable = true;
 }
 
+local Nilable = {
+	Theme = true;
+}
+
 --- Custom navigator class to replicate actual instance behaviour
 local class = {}
 
@@ -160,6 +164,11 @@ return function(object)
 
 		-- Initial check to see if there is an artifical instance function
 		local result = class[what]
+
+		-- If it is something that can be nil, return it no matter what
+		if Nilable[what] then
+			return rawget(self, what)
+		end
 
 		-- Check to see if it is a private class function
 		if result == nil and string.sub(what, 1, 2) == "__" then

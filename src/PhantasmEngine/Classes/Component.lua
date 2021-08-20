@@ -1,10 +1,3 @@
---[[
---File Name: Component.lua
---Author: TheGrimDeathZombie
---Last Modified: Tuesday, May 18th 2021, 10:33:39 am
---Modified By: TheGrimDeathZombie
---]]
-
 local Libraries = script.Parent.Parent.Libraries
 local Util
 local Classes = script.Parent
@@ -27,7 +20,7 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 	self.Tree = tree
 	self.Parent = parent
 	self.Context = {}
-	self.__Animations = nil
+	self.__Animations = {}
 
 	self.Elements = {}
 	self.__Properties = {}
@@ -87,6 +80,10 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 	return self
 end
 
+function class:GetAnimationState()
+	
+end
+
 function class:PlayAnimation(name)
 	local animData = self.Animations[name]
 	assert(animData, string.format("Component '%s' does not have an animation with the name '%s'", self.Name, name))
@@ -132,6 +129,13 @@ function class:Render()
 				-- Has the element's properties changed?
 				local originalProperties = element.Data.Properties or {}
 				local treeElement = tree.Children[name]
+				if element.State ~= "Normal" then
+					if treeElement.StateAnimations and treeElement.StateAnimations[element.State] and treeElement.StateAnimations[element.State].Goal then
+						for prop, _ in pairs(treeElement.StateAnimations[element.State].Goal) do
+							treeElement.Properties[prop] = element.Properties[prop]
+						end
+					end
+				end
 				if not Util:CompareTables(originalProperties, treeElement.Properties) then
 					-- It has changed, update the element
 					local diff = Util:GenerateDifferences(originalProperties, treeElement.Properties)
@@ -180,6 +184,13 @@ function class:Render()
 		if data[name] then
 			-- The element's properties has changed
 			local treeElement = data[name]
+			if element.State ~= "Normal" then
+				if treeElement.StateAnimations and treeElement.StateAnimations[element.State] and treeElement.StateAnimations[element.State].Goal then
+					for prop, _ in pairs(treeElement.StateAnimations[element.State].Goal) do
+						treeElement.Properties[prop] = element.Properties[prop]
+					end
+				end
+			end
 			for prop, val in pairs(treeElement.Properties) do
 				-- Skip an event property if there is already a function generated for it
 				-- as we can be certain it is just the same function as before.
@@ -277,6 +288,7 @@ function class:Destroy()
 		v:Destroy()
 	end
 	self.__Animations = {}
+	self.Object:Destroy()
 	for _, element in pairs(self.Children) do
 		element:Destroy()
 	end

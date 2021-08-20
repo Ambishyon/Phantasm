@@ -1,3 +1,6 @@
+local Libraries = script.Parent.Parent.Libraries
+local Util = require(Libraries.Util)
+
 --- A class for handling multiple animations being played at once
 local class = {}
 class.__index = class
@@ -43,7 +46,9 @@ function class:Update()
 				mergedResults[prop] = val
 			end
 			-- Remove it from the stack as it is no longer playing
-			table.remove(self.__Stack, table.find(self.__Stack, animData))
+			if table.find(self.__Stack, animData) then
+				table.remove(self.__Stack, table.find(self.__Stack, animData))
+			end
 		end
 	end
 

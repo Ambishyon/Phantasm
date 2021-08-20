@@ -334,7 +334,7 @@ function BoatTween.Create(_, Object, Data)
 	Data = type(Data) == "table" and Data or {}
 
 	-- Define settings
-	local EventStep: RBXScriptSignal = ValidStepTypes[Data.StepType] and RunService[Data.StepType] or RunService.Stepped
+	local EventStep: RBXScriptSignal = ValidStepTypes[Data.StepType] and RunService[Data.StepType] or RunService.RenderStepped
 	local TweenFunction = TweenFunctions[Data.EasingStyle or "Quad"][Data.EasingDirection or "In"]
 	local Time = math.max(type(Data.Time) == "number" and Data.Time or 1, 0.001)
 	local Goal = type(Data.Goal) == "table" and Data.Goal or {}
@@ -356,6 +356,7 @@ function BoatTween.Create(_, Object, Data)
 
 	local TweenObject = {
 		["Instance"] = Object;
+		["ElapsedTime"] = ElapsedTime;
 		["PlaybackState"] = Enum.PlaybackState.Begin;
 
 		["Completed"] = CompletedEvent.Event;
@@ -409,6 +410,7 @@ function BoatTween.Create(_, Object, Data)
 		StartTime = os.clock() - ElapsedTime
 		PlaybackConnection = EventStep:Connect(function()
 			ElapsedTime = os.clock() - StartTime
+			TweenObject.ElapsedTime = ElapsedTime
 			if ElapsedTime >= Time then
 				if Reverse then
 					for Property, Lerper in pairs(TweenData) do
@@ -437,7 +439,7 @@ function BoatTween.Create(_, Object, Data)
 			else
 				local Delta = Reverse and (1 - ElapsedTime/Time) or (ElapsedTime/Time)
 				local Position = math.clamp(TweenFunction(Delta), 0, 1)
-				
+
 				for Property, Lerper in pairs(TweenData) do
 					Object[Property] = Lerper(Position)
 				end

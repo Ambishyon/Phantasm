@@ -5,8 +5,20 @@
     
 	"ReplicatedStorage": {
 		"$className": "ReplicatedStorage",
-		"Phantasm": {
-			"$path": "src"
+		"PhantasmSource": {
+			"$className": "Folder",
+			"PhantasmEditor": {
+				"$className": "Folder",
+				"Phantasm Editor Main":{
+					"$path": "src/Phantasm Editor/Phantasm Editor Main",
+					"PhantasmEngine": {
+						"$path": "src/PhantasmEngine"
+					}
+				}
+			},
+			"PhantasmEngine": {
+				"$path": "src/PhantasmEngine"
+			}
 		}
 	}
   }

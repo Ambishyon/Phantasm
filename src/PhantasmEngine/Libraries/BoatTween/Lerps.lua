@@ -90,6 +90,16 @@ local function Color3Lerp(C0, C1)
 end
 
 local Lerps = setmetatable({
+	table = function(V0, V1)
+		return function(Alpha)
+			if Alpha < 0.5 then
+				return V0
+			else
+				return V1
+			end
+		end
+	end;
+
 	boolean = function(V0, V1)
 		return function(Alpha)
 			if Alpha < 0.5 then
