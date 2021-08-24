@@ -5,11 +5,10 @@ repo_url: https://github.com/Ambishyon/Phantasm
 
 theme:
   name: material
-
   pallete:
-    scheme: slate
-    primary: deep purple
-    accent: deep purple
+    primary: 'Deep Purple'
+    accent: 'Deep Purple'
+    scheme: preference
 
 nav:
   - Home: index.md
