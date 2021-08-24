@@ -6,8 +6,8 @@ repo_url: https://github.com/Ambishyon/Phantasm
 theme:
   name: material
   pallete:
-    primary: 'Deep Purple'
-    accent: 'Deep Purple'
+    primary: deep purple
+    accent: deep purple
     scheme: preference
 
 nav:
