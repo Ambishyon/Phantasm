@@ -18,6 +18,8 @@ local engineProperties = {
 	Components = true;
 	Animations = true;
 	Theme = true;
+	Init = true;
+	Cleanup = true;
 }
 
 local engineDefaults = {
@@ -67,12 +69,21 @@ function class.new(data: table, parent: Instance?)
 			self.Object[prop] = val
 		end
 	end
+	setmetatable(self, class)
 
-	return setmetatable(self, class)
+	if data.Init then
+		data.Init(self, self.Context)
+	end
+
+	return self
 end
 
-function class:GetElementTree()
-
+function class:GetFromId(id)
+	for _, v in pairs(self:GetDescendants()) do
+		if v.Id == id then
+			return v
+		end
+	end
 end
 
 function class:GetAnimationState()
@@ -110,6 +121,10 @@ function class:Render()
 end
 
 function class:Destroy()
+	if self.Data.Cleanup then
+		self.Data.Cleanup(self, self.Context)
+	end
+
 	for _, v in pairs(self.__Animations) do
 		v:Destroy()
 	end

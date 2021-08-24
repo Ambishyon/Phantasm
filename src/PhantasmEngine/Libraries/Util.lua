@@ -210,6 +210,7 @@ local PHANTASMFOLDER = module.PhantasmFolder
 local Classes = script.Parent.Parent.Classes
 local Element
 local Component
+local Fragment
 
 local engine = script.Parent.Parent
 local folders = {
@@ -376,6 +377,11 @@ function module:GenerateElement(name, ourTree, data, parent)
 		if data.Children then
 			newElement.Children = module:GenerateElements(ourTree, data.Children, newElement)
 		end
+	elseif data.ClassName == "Fragment" then
+		module:DebugPrint("Creating fragment with name",name,"and data:")
+		module:DebugPrint(data)
+
+		newElement = Fragment.new(name, data, ourTree, parent or ourTree)
 	else
 		module:DebugPrint("Creating element with name",name,"and data:")
 		module:DebugPrint(data)
@@ -400,6 +406,9 @@ function module:GenerateElements(ourTree, data, mainParent)
 	end
 	if Component == nil then
 		Component = require(Classes.Component)
+	end
+	if Fragment == nil then
+		Fragment = require(Classes.Fragment)
 	end
 	local function traverseTree(tree, parent)
 		local results = {}

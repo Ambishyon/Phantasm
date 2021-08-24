@@ -1,0 +1,34 @@
+site_name: Phantasm Documentation
+site_url: https://ambishyon.github.io/phantasm/
+repo_name: Ambishyon/Phantasm
+repo_url: https://github.com/Ambishyon/Phantasm
+
+theme:
+  name: material
+
+  pallete:
+    scheme: slate
+    primary: deep purple
+    accent: deep purple
+
+nav:
+  - Home: index.md
+  - Guide:
+    - Installation: guide/installation.md
+    - Basic Interface: guide/basic-interface.md
+    - Interface Structure: guide/interface-structure.md
+    - Elements: guide/elements.md
+    - Components: guide/components.md
+    - Events: guide/events.md
+    - Bindings and Refs: guide/bindings-and-refs.md
+    - Functions: guide/functions.md
+  - Advanced Concepts:
+    - Fragments: advanced/fragments.md
+    - Portals: advanced/portals.md
+  - API Reference: api-reference.md
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - pymdownx.superfences

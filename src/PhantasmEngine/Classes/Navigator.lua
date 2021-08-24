@@ -19,29 +19,29 @@ local Nilable = {
 local class = {}
 
 function class:GetChildren()
-	local object = rawget(self, "__Object")
+	local object = self
 	local result = {}
 	Util:CopyTo(object.Children or object.Elements, result)
 
 	for i, v in pairs(result) do
-		result[i] = v.Navigator
+		result[i] = v
 	end
 
 	return result
 end
 
 function class:FindFirstChild(name, recursive)
-	local object = rawget(self, "__Object")
+	local object = self
 
 	local function search(parent)
 		for _, element in pairs(parent.Children) do
 			if element.Name == name then
-				return element.Navigator
+				return element
 			else
 				if recursive then
 					local res = search(element)
 					if res then
-						return res.Navigator
+						return res
 					end
 				end
 			end
@@ -52,17 +52,17 @@ function class:FindFirstChild(name, recursive)
 end
 
 function class:FindFirstChildOfClass(name, recursive)
-	local object = rawget(self, "__Object")
+	local object = self
 
 	local function search(parent)
 		for _, element in pairs(parent.Children) do
 			if element.ClassName == name then
-				return element.Navigator
+				return element
 			else
 				if recursive then
 					local res = search(element)
 					if res then
-						return res.Navigator
+						return res
 					end
 				end
 			end
@@ -73,17 +73,17 @@ function class:FindFirstChildOfClass(name, recursive)
 end
 
 function class:FindFirstChildWhichIsA(name, recursive)
-	local object = rawget(self, "__Object")
+	local object = self
 
 	local function search(parent)
 		for _, element in pairs(parent.Children) do
 			if element:IsA(name) then
-				return element.Navigator
+				return element
 			else
 				if recursive then
 					local res = search(element)
 					if res then
-						return res.Navigator
+						return res
 					end
 				end
 			end
@@ -94,13 +94,13 @@ function class:FindFirstChildWhichIsA(name, recursive)
 end
 
 function class:GetDescendants()
-	local object = rawget(self, "__Object")
+	local object = self
 
 	local desc = {}
 
 	local function index(what)
 		for _, v in pairs(what.Children) do
-			table.insert(desc, v.Navigator)
+			table.insert(desc, v)
 			index(v)
 		end
 	end
@@ -141,7 +141,7 @@ function class:FindFirstAncestorWhichIsA(name: string)
 end
 
 function class:ClearAllChildren()
-	local object = rawget(self, "__Object")
+	local object = self
 
 	for i, element in pairs(object.Children) do
 		element:Destroy()
@@ -183,7 +183,15 @@ return function(object)
 		if result == nil and Component then
 			-- Check if there is a component function that can be fired
 			if Component.Functions then
-				result = Component.Functions[what]
+				if self.__Functions == nil then
+					self.__Functions = {}
+				end
+				if self.__Functions[what] == nil then
+					self.__Functions = function(...)
+						return Component.Functions[what](self, ...)
+					end
+				end
+				result = self.__Functions[what]
 			end
 		end
 
@@ -232,6 +240,16 @@ return function(object)
 		end
 
 		assert(result ~= nil, string.format("%s is not a valid member of %s", what, Name))
+
+		if type(result) == "table" and result.Type == "Ref" then
+			local component = self:FindFirstAncestorWhichIsA("Component")
+			if component then
+				result = component:GetFromId(result.Id)
+			else
+				result = rawget(self, "Tree"):GetFromId(result.Id)
+			end
+		end
+
 		return result
 	end
 
@@ -242,14 +260,14 @@ return function(object)
 			local ClassName, Component, Properties = rawget(self, "ClassName"),
 				rawget(self, "Component"),
 				rawget(self, "Properties")
-			
+
 			if ClassName == "Component" then
 				local propertyInfo = Component.Properties[what]
 				if propertyInfo then
 					assert(propertyInfo.Visible == true or propertyInfo.Visible == nil, string.format("%s is a readonly property", what))
 				end
 			end
-		
+
 			if ClassName == "Interface" then
 				if GuiWhitelist[what] then
 					self.Object[what] = to
@@ -259,7 +277,7 @@ return function(object)
 			else
 				Properties[what] = to
 			end
-		
+
 			if what == "Name" then
 				rawset(self, "Name", to)
 			end

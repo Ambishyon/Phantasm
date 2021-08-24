@@ -1,3 +1,5 @@
+local HttpService = game:GetService("HttpService")
+
 local Libraries = script.Parent.Parent.Libraries
 local ObjectCache = require(Libraries.ObjectCache)
 local BoatTween = require(Libraries.BoatTween)
@@ -7,6 +9,8 @@ local Maid = require(Classes.Maid)
 local Navigator = require(Classes.Navigator)
 local AnimationStack = require(Classes.AnimationStack)
 local Animator = require(Classes.Animator)
+
+local Phantasm = require(script.Parent.Parent)
 
 local caches = {}
 
@@ -29,6 +33,7 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 
 	self.ClassName = data.ClassName
 	self.Properties = data.Properties
+	self.Id = data.Id or HttpService:GenerateGUID(false)
 	self.Data = data
 	self.Children = {}
 	self.Tree = tree
@@ -52,7 +57,11 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 	self.Name = name
 
 	if parent then
-		self.Object.Parent = (type(parent.Object) == "table" and parent.Object.Object) or (parent.Object)
+		if self.Data.Portal then
+			self.Object.Parent = self.Data.Portal
+		else
+			self.Object.Parent = (type(parent.Object) == "table" and parent.Object.Object) or (parent.Object)
+		end
 	end
 
 	-- Setup initial state animation
@@ -297,7 +306,11 @@ function class:Render()
 
 		local combinedChanges = Util:CombineTables(changeList.Changes, changeList.Additions)
 
-		for prop, val in pairs(combinedChanges) do
+		for prop, val: any in pairs(combinedChanges) do
+			if prop == Phantasm.Ref then
+				val.Id = self.Id
+				continue
+			end
 			if prop == "Size" or prop == "Position" then
 				-- Skip size and position as we already handle them above
 				self.__Properties[prop] = type(val) == "table" and Util:DeepCopy(val) or val
@@ -306,7 +319,15 @@ function class:Render()
 
 			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, prop), val)
 
-			if typeof(self.Object[prop]) == "RBXScriptSignal" then
+			if (type(prop) == "table" and (prop.Type == "Event" or prop.Type == "Changed")) then
+				local event do
+					if prop.Type == "Event" then
+						event = self.Object[prop.Name]
+					else
+						event = self.Object:GetPropertyChangedSignal(prop.Name)
+					end
+				end
+
 				if type(val) == "table" then
 					-- It's a preset function, get the actual function
 					if self.Maid[prop] then
@@ -314,7 +335,7 @@ function class:Render()
 					end
 					local result = Util:GetFunction(self.Tree, val.Name)
 					if result then
-						self.Maid[prop] = self.Object[prop]:Connect(function(...)
+						self.Maid[prop] = event:Connect(function(...)
 							result.Run(self, val.Properties, ...)
 						end)
 					end
@@ -326,12 +347,22 @@ function class:Render()
 						if self.Maid[prop] then
 							self.Maid[prop] = nil
 						end
-						self.Maid[prop] = self.Object[prop]:Connect(val)
+						self.Maid[prop] = event:Connect(function(...)
+							val(self, ...)
+						end)
 					end
 				else
 					warn(string.format("Failed to connect event for '%s': expected a function or a reference to an engine function, got '%s' instead.", prop, typeof(val)))
 				end
 			else
+				if type(val) == "table" and val.Type == "Ref" then
+					local component = self:FindFirstAncestorWhichIsA("Component")
+					if component then
+						val = component:GetFromId(val.Id).Object
+					else
+						val = self.Tree:GetFromId(val.Id).Object
+					end
+				end
 				-- According to my knowledge, no known Roblox classes have table-based properties
 				-- So we can safely skip these value types, if this changes in the future this
 				-- will be fixed.
@@ -342,7 +373,13 @@ function class:Render()
 				if typeof(val) == "UDim2" then
 					val = getSizeFromParent(val, parent)
 				end
-				self.Object[prop] = val
+				local success, result = pcall(function()
+					self.Object[prop] = val
+				end)
+
+				if not success then
+					warn(string.format("[PHANTASM]: Failed to set property '%s' of element '%s': %s", prop, self.Name, result))
+				end
 			end
 
 			self.__Properties[prop] = type(val) == "table" and Util:DeepCopy(val) or val

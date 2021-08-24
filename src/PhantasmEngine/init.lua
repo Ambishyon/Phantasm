@@ -9,10 +9,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Libraries = script.Libraries
 local Classes = script.Classes
+local API = script.API
 local Interface = require(Classes.Interface)
 local Util = require(Libraries.Util)
 local Interpreter = require(Libraries.Interpeter)
 local Globals = require(script.Globals)
+local Changed, Event, Ref = require(API:FindFirstChild("Changed")), require(API.Event), require(API.Ref)
 
 local PHANTASMFOLDER = Util.PhantasmFolder
 
@@ -23,8 +25,11 @@ if RunService:IsStudio() and RunService:IsRunning() == false then
 end
 
 local module = {}
-
 local MountedInterfaces = {}
+
+module.Changed = Changed
+module.Event = Event
+module.Ref = Ref
 
 module.__debuggerPauseState = false
 function module.setDebuggerPauseState(state: boolean)
@@ -41,6 +46,62 @@ function module.getMountedInterfaces()
 		table.insert(res, interface)
 	end
 	return res
+end
+
+function module.createElement(className: string, properties: table?, children: table?): table
+	return {
+		ClassName = className;
+		Properties = properties or {};
+		Children = children or {};
+	}
+end
+
+function module.createPortal(target: Instance, className: string, properties: table?, children: table?): table
+	return {
+		ClassName = className;
+		Portal = target;
+		Properties = properties or {};
+		Children = children or {};
+	}
+end
+
+function module.createRef(element: any): table
+	return {
+		Type = "Ref";
+		Id = type(element) == "table" and element.Id or element;
+	}
+end
+
+function module.createFragment(elements: table): table
+	return {
+		ClassName = "Fragment";
+		Children = elements;
+	}
+end
+
+function module.createComponent(className: string, properties: table?, children: table?): table
+	return {
+		ClassName = "Component";
+		Component = className;
+		Properties = properties or {};
+		Children = children or {};
+	}
+end
+
+function module.createBinding(name: string, properties: table): table
+	return {
+		Type = "Binding";
+		Name = name;
+		Properties = properties;
+	}
+end
+
+function module.createFunction(name: string, properties: table): table
+	return {
+		Type = "Function";
+		Name = name;
+		Properties = properties;
+	}
 end
 
 function module.mountInterface(data: table | ModuleScript, parent: Instance?)

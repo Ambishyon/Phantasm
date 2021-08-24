@@ -1,10 +1,13 @@
+local HttpService = game:GetService("HttpService")
+
 local Libraries = script.Parent.Parent.Libraries
 local Util
 local Classes = script.Parent
-local Maid = require(Classes.Maid)
 local Element = require(Classes.Element)
 local Navigator = require(Classes.Navigator)
 local AnimationSet = require(Classes.AnimationSet)
+
+local Phantasm = require(script.Parent.Parent)
 
 local class = {}
 Navigator(class)
@@ -16,6 +19,7 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 	local self = {}
 
 	self.ClassName = "Component"
+	self.Id = data.Id or HttpService:GenerateGUID(false)
 	self.Children = {}
 	self.Tree = tree
 	self.Parent = parent
@@ -78,6 +82,32 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 	end
 
 	return self
+end
+
+function class:GetFromId(id)
+	for _, v in pairs(self:GetDescendants()) do
+		if v.Id == id then
+			return v
+		end
+	end
+end
+
+function class:GetElements()
+	local desc = {}
+
+	local function index(what)
+		for _, v in pairs(what.Children) do
+			table.insert(desc, v)
+			index(v)
+		end
+	end
+
+	for _, element in pairs(self.Elements) do
+		table.insert(desc, element)
+		index(element)
+	end
+
+	return desc
 end
 
 function class:GetAnimationState()
@@ -275,9 +305,7 @@ function class:Render()
 end
 
 function class:IsA(name)
-	if name == "Component" then
-		return true
-	end
+	return name == "Component"
 end
 
 function class:Destroy()
