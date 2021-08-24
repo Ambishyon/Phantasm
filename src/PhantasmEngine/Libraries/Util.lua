@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
 local DEBUGMODE = false
 
@@ -190,7 +191,7 @@ end
 -------------------------------------------------Create function End----------------------------------------------------
 
 module.PhantasmFolder = ReplicatedStorage:WaitForChild("Phantasm", 5) or module.Create("Folder") {
-	Parent = ReplicatedStorage;
+	Parent = (RunService:IsStudio() and RunService:IsRunning() == false) and script or ReplicatedStorage;
 	Name = "Phantasm";
 	module.Create("Folder") {
 		Name = "Components";

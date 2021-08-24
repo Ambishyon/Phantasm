@@ -16,14 +16,6 @@ local Interpreter = require(Libraries.Interpeter)
 local Globals = require(script.Globals)
 local Changed, Event, Ref = require(API:FindFirstChild("Changed")), require(API.Event), require(API.Ref)
 
-local PHANTASMFOLDER = Util.PhantasmFolder
-
-if RunService:IsStudio() and RunService:IsRunning() == false then
-	-- If the code is running in studio and isn't running in a live game, we can assume it is running
-	-- in a plugin context we make sure not to make any unwanted mess for the users of the plugin
-	PHANTASMFOLDER.Parent = script
-end
-
 local module = {}
 local MountedInterfaces = {}
 
