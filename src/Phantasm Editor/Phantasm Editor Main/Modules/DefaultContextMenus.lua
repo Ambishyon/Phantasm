@@ -1,0 +1,67 @@
+local Providers = script.Parent.Parent.Providers
+local MenuButtons = require(Providers.MenuButtons)
+local Classes = script.Parent.Parent.Classes
+local ContextMenu = require(Classes.ContextMenu)
+
+local module = {}
+
+local FileContextMenu = ContextMenu.new()
+local EditContextMenu = ContextMenu.new()
+local ViewContextMenu = ContextMenu.new()
+local ObjectContextMenu = ContextMenu.new()
+
+FileContextMenu:AddButton("New", "", "")
+
+EditContextMenu:AddButton("Undo", "Ctrl+Z", "")
+EditContextMenu:AddButton("Redo", "Ctrl+Y", "")
+EditContextMenu:AddSeparator()
+EditContextMenu:AddButton("Copy", "Ctrl+C", "")
+EditContextMenu:AddButton("Paste", "Ctrl+V", "")
+EditContextMenu:AddButton("Duplicate", "Ctrl+D", "")
+EditContextMenu:AddButton("Delete", "Backspace", "")
+EditContextMenu:AddSeparator()
+EditContextMenu:AddButton("Set Default Properties", "", "")
+EditContextMenu:AddButton("Copy Properties", "Ctrl+Alt+C", "")
+EditContextMenu:AddButton("Paste Properties", "Ctrl+Alt+V", "")
+EditContextMenu:AddSeparator()
+EditContextMenu:AddButton("Select All", "Ctrl+A", "")
+EditContextMenu:AddButton("Select None", "", "")
+EditContextMenu:AddButton("Select Inverse", "Ctrl+Shift+A", "")
+EditContextMenu:AddSeparator()
+EditContextMenu:AddButton("Select All With Same Properties")
+EditContextMenu:AddButton("Select All With Same Fill")
+EditContextMenu:AddButton("Select All With Same Stroke")
+EditContextMenu:AddButton("Select All With Same Text Properties")
+EditContextMenu:AddButton("Select All With Same Font")
+
+ViewContextMenu:AddButton("Pixel Grid", "", "")
+ViewContextMenu:AddButton("Rulers", "", "")
+ViewContextMenu:AddSeparator()
+ViewContextMenu:AddButton("Zoom In", "+", "")
+ViewContextMenu:AddButton("Zoom Out", "-", "")
+ViewContextMenu:AddButton("Zoom To 100%", "Shift+0", "")
+ViewContextMenu:AddButton("Zoom To Fit", "Shift+1", "")
+ViewContextMenu:AddButton("Zoom To Selection", "Shift+2", "")
+-- ViewContextMenu:AddSubmenu("Windows", WindowContextMenu)
+
+ObjectContextMenu:AddButton("Create Component", "Ctrl+Alt+K", "")
+ObjectContextMenu:AddSeparator()
+ObjectContextMenu:AddButton("Bring To Front", "]", "")
+ObjectContextMenu:AddButton("Bring Forward", "Ctrl+]", "")
+ObjectContextMenu:AddButton("Send Backward", "Ctrl+[", "")
+ObjectContextMenu:AddButton("Send To Back", "[", "")
+ObjectContextMenu:AddSeparator()
+ObjectContextMenu:AddButton("Rotate 180°", "", "")
+ObjectContextMenu:AddButton("Rotate 90° Left", "", "")
+ObjectContextMenu:AddButton("Rotate 90° Right", "", "")
+ObjectContextMenu:AddSeparator()
+ObjectContextMenu:AddButton("Show/Hide Selection", "Ctrl+Shift+H", "")
+ObjectContextMenu:AddButton("Lock/Unlock Selection", "Ctrl+Shift+L", "")
+ObjectContextMenu:AddButton("Hide Other Layers", "", "")
+
+MenuButtons:AddMenuButton("File", FileContextMenu)
+MenuButtons:AddMenuButton("Edit", EditContextMenu)
+MenuButtons:AddMenuButton("View", ViewContextMenu)
+MenuButtons:AddMenuButton("Object", ObjectContextMenu)
+
+return module

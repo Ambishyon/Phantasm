@@ -1,0 +1,25 @@
+{
+  "name": "Phantasm-UI-Engine",
+  "tree": {
+    "$className": "DataModel",
+    
+	"ReplicatedStorage": {
+		"$className": "ReplicatedStorage",
+		"PhantasmSource": {
+			"$className": "Folder",
+			"PhantasmEditor": {
+				"$className": "Folder",
+				"Phantasm Editor Main":{
+					"$path": "src/Phantasm Editor/Phantasm Editor Main",
+					"PhantasmEngine": {
+						"$path": "src/PhantasmEngine"
+					}
+				}
+			},
+			"PhantasmEngine": {
+				"$path": "src/PhantasmEngine"
+			}
+		}
+	}
+  }
+}
