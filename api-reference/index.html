@@ -1,0 +1,724 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+        <link rel="canonical" href="https://ambishyon.github.io/phantasm/api-reference/">
+      
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.1.0">
+    
+    
+      
+        <title>API Reference - Phantasm Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.bc7e593a.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab28b872.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#methods" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://ambishyon.github.io/phantasm/" title="Phantasm Documentation" class="md-header-nav__button md-logo" aria-label="Phantasm Documentation">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            Phantasm Documentation
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/Ambishyon/Phantasm/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ambishyon/Phantasm
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://ambishyon.github.io/phantasm/" title="Phantasm Documentation" class="md-nav__button md-logo" aria-label="Phantasm Documentation">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Phantasm Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/Ambishyon/Phantasm/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ambishyon/Phantasm
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
+    
+    <label class="md-nav__link" for="nav-2">
+      Guide
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Guide" data-md-level="1">
+      <label class="md-nav__title" for="nav-2">
+        <span class="md-nav__icon md-icon"></span>
+        Guide
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/installation/" class="md-nav__link">
+      Installation
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/basic-interface/" class="md-nav__link">
+      Basic Interface
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/interface-structure/" class="md-nav__link">
+      Interface Structure
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/elements/" class="md-nav__link">
+      Elements
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/components/" class="md-nav__link">
+      Components
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/events/" class="md-nav__link">
+      Events
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/bindings-and-refs/" class="md-nav__link">
+      Bindings and Refs
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../guide/functions/" class="md-nav__link">
+      Functions
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3">
+    
+    <label class="md-nav__link" for="nav-3">
+      Advanced Concepts
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Advanced Concepts" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        <span class="md-nav__icon md-icon"></span>
+        Advanced Concepts
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../advanced/fragments/" class="md-nav__link">
+      Fragments
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../advanced/portals/" class="md-nav__link">
+      Portals
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        API Reference
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+    
+    <a href="./" class="md-nav__link md-nav__link--active">
+      API Reference
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phantasmcreateelement" class="md-nav__link">
+    Phantasm.createElement
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmcreatecomponent" class="md-nav__link">
+    Phantasm.createComponent
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmmountinterface" class="md-nav__link">
+    Phantasm.mountInterface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmdemountinterface" class="md-nav__link">
+    Phantasm.demountInterface
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constants" class="md-nav__link">
+    Constants
+  </a>
+  
+    <nav class="md-nav" aria-label="Constants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phantasmref" class="md-nav__link">
+    Phantasm.Ref
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmevent" class="md-nav__link">
+    Phantasm.Event
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmchanged" class="md-nav__link">
+    Phantasm.Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phantasmcreateelement" class="md-nav__link">
+    Phantasm.createElement
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmcreatecomponent" class="md-nav__link">
+    Phantasm.createComponent
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmmountinterface" class="md-nav__link">
+    Phantasm.mountInterface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmdemountinterface" class="md-nav__link">
+    Phantasm.demountInterface
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constants" class="md-nav__link">
+    Constants
+  </a>
+  
+    <nav class="md-nav" aria-label="Constants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phantasmref" class="md-nav__link">
+    Phantasm.Ref
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmevent" class="md-nav__link">
+    Phantasm.Event
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phantasmchanged" class="md-nav__link">
+    Phantasm.Changed
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/Ambishyon/Phantasm/edit/master/docs/api-reference.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                  <h1>API Reference</h1>
+                
+                <div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This documentation is currently incomplete and will be finished in the near future. For now, most of the important methods and constants have been documented.</p>
+</div>
+<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
+<h3 id="phantasmcreateelement">Phantasm.createElement<a class="headerlink" href="#phantasmcreateelement" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Phantasm.createElement(className, [props, [children]]) -&gt; table
+</code></pre></div>
+<p>Creates an Element data structure that describes information about how a Roblox Instance should look like that can be used within an interface.</p>
+<p>The <code>children</code> argument is a table specifying elements that are parented to this element.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Modifying <code>props</code> after they're passed to into <code>createElement</code> may result in unexpected behaviour, use a Component instead.</p>
+</div>
+<hr />
+<h3 id="phantasmcreatecomponent">Phantasm.createComponent<a class="headerlink" href="#phantasmcreatecomponent" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Phantasm.createComponent(componentName, [props, [children]]) -&gt; table
+</code></pre></div>
+<p>Creates a Component data structure that describes information about how a Component should be displayed that can be used within an interface.</p>
+<hr />
+<h3 id="phantasmmountinterface">Phantasm.mountInterface<a class="headerlink" href="#phantasmmountinterface" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Phantasm.mountInterface(interfaceData, [parent]) -&gt; PhantasmInterface
+</code></pre></div>
+<p>Generates a <code>PhantasmInterface</code> object that will create and handle all the elements, components, and fragments as specified in the <code>interfaceData</code> argument.</p>
+<p>The resulting <code>PhantasmInterface</code> object can be interacted with nearly as if it were itself a Roblox Instance and can be passed to APIs like <code>Phantasm.unmountInterface</code>. It may also be used in the future for debugging APIs.</p>
+<hr />
+<h3 id="phantasmdemountinterface">Phantasm.demountInterface<a class="headerlink" href="#phantasmdemountinterface" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Phantasm.demountInterface(interface) -&gt; void
+</code></pre></div>
+<p>Destroys the given <code>PhantasmInterface</code> and all of its descendants. Does not work on a Roblox Instance and will also remove the interface from the render stack -- this must be given an interface that was returned by <code>Phantasm.mountInterface</code>.</p>
+<hr />
+<h2 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h2>
+<h3 id="phantasmref">Phantasm.Ref<a class="headerlink" href="#phantasmref" title="Permanent link">&para;</a></h3>
+<p>Use <code>Phantasm.Ref</code> as a key in the properties of an element or component to tell the engine to automatically set that element or component as the specified Ref's reference.</p>
+<p>More information about this can be found on <a href="../guide/bindings-and-refs">this page</a>.</p>
+<hr />
+<h3 id="phantasmevent">Phantasm.Event<a class="headerlink" href="#phantasmevent" title="Permanent link">&para;</a></h3>
+<p>Index into <code>Phantasm.Event</code> to receive a key that can be used to connect to events when creating elements:</p>
+<div class="highlight"><pre><span></span><code><span class="n">Phantasm</span><span class="p">.</span><span class="n">createElement</span><span class="p">(</span><span class="s2">&quot;TextButton&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="p">[</span><span class="n">Phantasm</span><span class="p">.</span><span class="n">Event</span><span class="p">.</span><span class="n">Activated</span><span class="p">]</span> <span class="o">=</span> <span class="kr">function</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">inputObject</span><span class="p">,</span> <span class="n">clickCount</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="s2">&quot;clicked with inputObject&quot;</span><span class="p">,</span> <span class="n">inputObject</span><span class="p">,</span> <span class="s2">&quot;and count&quot;</span><span class="p">,</span> <span class="n">clickCount</span><span class="p">)</span>
+    <span class="kr">end</span><span class="p">;</span>
+<span class="p">})</span>
+</code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>Event callbacks receive the Phantasm Element as the first parameter, followed by any parameters yielded by the event.</p>
+</div>
+<p>Reference the <a href="../guide/events">events guide</a> for further details.</p>
+<hr />
+<h3 id="phantasmchanged">Phantasm.Changed<a class="headerlink" href="#phantasmchanged" title="Permanent link">&para;</a></h3>
+<p>Index into <code>Phantasm.Changed</code> to receive a key that can be used to connect to <a href="http://wiki.roblox.com/index.php?title=API:Class/Instance/GetPropertyChangedSignal"><code>GetPropertyChangedSignal</code></a> events.</p>
+<p>It functions similarly to <code>Phantasm.Event</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">Phantasm</span><span class="p">.</span><span class="n">createElement</span><span class="p">(</span><span class="s2">&quot;TextButton&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="p">[</span><span class="n">Phantasm</span><span class="p">.</span><span class="n">Changed</span><span class="p">.</span><span class="n">AbsoluteSize</span><span class="p">]</span> <span class="o">=</span> <span class="kr">function</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TextButton absoluteSize changed to&quot;</span><span class="p">,</span> <span class="n">element</span><span class="p">.</span><span class="n">AbsoluteSize</span><span class="p">)</span>
+    <span class="kr">end</span><span class="p">;</span>
+<span class="p">})</span>
+</code></pre></div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../advanced/portals/" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Portals
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/vendor.6a3d08fc.min.js"></script>
+      <script src="../assets/javascripts/bundle.71201edf.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      
+      <script>
+        app = initialize({
+          base: "..",
+          features: [],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.4ac00218.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+    
+  </body>
+</html>
