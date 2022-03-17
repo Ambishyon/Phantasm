@@ -144,6 +144,7 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 end
 
 function class:Render()
+	debug.profilebegin("Element Render")
 	local parent do
 		if self.Parent:IsA("Element") then
 			parent = self.Parent.Object
@@ -153,6 +154,7 @@ function class:Render()
 	end
 	-- Setup initial properties to reset once the element is destroyed
 	for prop, _ in pairs(self.Properties) do
+		if type(prop) == "table" then continue end
 		if self.__OriginalProperties[prop] == nil then
 			self.__OriginalProperties[prop] = self.Object[prop]
 		end
@@ -184,6 +186,7 @@ function class:Render()
 
 	-- Update bindings
 	for prop, val in pairs(self.Properties) do
+		if type(prop) == "table" then continue end
 		if type(val) == "table" and val.Type == "Binding" then
 			local binding = Util:GetBinding(self.Tree, val.Name)
 			if binding then
@@ -307,6 +310,11 @@ function class:Render()
 		local combinedChanges = Util:CombineTables(changeList.Changes, changeList.Additions)
 
 		for prop, val: any in pairs(combinedChanges) do
+			if (type(prop) == "table" and (prop.Type == "Event" or prop.Type == "Changed")) then
+				if self.Maid[prop.Type.."_"..prop.Name] then
+					continue
+				end
+			end
 			if prop == Phantasm.Ref then
 				val.Id = self.Id
 				continue
@@ -317,7 +325,7 @@ function class:Render()
 				continue
 			end
 
-			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, prop), val)
+			Util:DebugPrint(string.format("Element '%s' property '%s' changed to:", self.Name, tostring(prop)), val)
 
 			if (type(prop) == "table" and (prop.Type == "Event" or prop.Type == "Changed")) then
 				local event do
@@ -330,12 +338,12 @@ function class:Render()
 
 				if type(val) == "table" then
 					-- It's a preset function, get the actual function
-					if self.Maid[prop] then
-						self.Maid[prop] = nil
+					if self.Maid[prop.Type.."_"..prop.Name] then
+						self.Maid[prop.Type.."_"..prop.Name] = nil
 					end
 					local result = Util:GetFunction(self.Tree, val.Name)
 					if result then
-						self.Maid[prop] = event:Connect(function(...)
+						self.Maid[prop.Type.."_"..prop.Name] = event:Connect(function(...)
 							result.Run(self, val.Properties, ...)
 						end)
 					end
@@ -344,10 +352,10 @@ function class:Render()
 					-- Don't apply the change as we can be 99% certain it is
 					-- The same one from before.
 					if type(self.__Properties[prop]) ~= "function" then
-						if self.Maid[prop] then
-							self.Maid[prop] = nil
+						if self.Maid[prop.Type.."_"..prop.Name] then
+							self.Maid[prop.Type.."_"..prop.Name] = nil
 						end
-						self.Maid[prop] = event:Connect(function(...)
+						self.Maid[prop.Type.."_"..prop.Name] = event:Connect(function(...)
 							val(self, ...)
 						end)
 					end
@@ -397,6 +405,7 @@ function class:Render()
 	for _, child in pairs(self.Children) do
 		child:Render()
 	end
+	debug.profileend()
 end
 
 function class:GetAnimationState()

@@ -115,9 +115,11 @@ function class:IsA(name: string)
 end
 
 function class:Render()
+	debug.profilebegin("Interface Render")
 	for _, element in pairs(self.Elements) do
 		element:Render()
 	end
+	debug.profileend()
 end
 
 function class:Destroy()

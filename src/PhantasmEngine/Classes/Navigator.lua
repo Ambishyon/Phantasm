@@ -182,7 +182,7 @@ return function(object)
 
 		if result == nil and Component then
 			-- Check if there is a component function that can be fired
-			if Component.Functions then
+			if Component.Functions and Component.Functions[what] then
 				if self.__Functions == nil then
 					self.__Functions = {}
 				end

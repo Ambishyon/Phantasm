@@ -1,5 +1,6 @@
 local UserInputService = game:GetService("UserInputService")
 
+local Phantasm = require(script.Parent.Parent)
 local Libraries = script.Parent.Parent.Libraries
 local Util = require(Libraries.Util)
 
@@ -114,11 +115,11 @@ return {
 					Size = UDim2.fromScale(1,1);
 					Text = "";
 
-					MouseButton1Down = function()
+					[Phantasm.Event.MouseButton1Down] = function()
 						context.MouseDown = true
 					end;
 
-					MouseButton1Up = function()
+					[Phantasm.Event.MouseButton1Up] = function()
 						context.MouseDown = false
 					end;
 					ZIndex = 100;

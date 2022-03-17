@@ -19,7 +19,7 @@ function class.new(name: string, data: table, tree: table, parent: table|nil)
 	local self = {}
 
 	self.ClassName = "Component"
-	self.Id = data.Id or HttpService:GenerateGUID(false)
+	self.Id = type(data) == "table" and data.Id or HttpService:GenerateGUID(false)
 	self.Children = {}
 	self.Tree = tree
 	self.Parent = parent
@@ -135,6 +135,7 @@ function class:StopAnimation(name)
 end
 
 function class:Render()
+	debug.profilebegin("Component Render")
 	local component = self.Component
 
 	-- Check for differences in the component properties
@@ -175,7 +176,7 @@ function class:Render()
 						if type(element.Properties[prop]) == "function" then
 							continue
 						end
-						Util:DebugPrint(string.format("Property '%s' of component element '%s' changed to '%s'", prop, name, tostring(val)))
+						Util:DebugPrint(string.format("Property '%s' of component element '%s' changed to '%s'", tostring(prop), name, tostring(val)))
 						element.Properties[prop] = val
 					end
 					element.Data.Properties = treeElement.Properties
@@ -302,6 +303,7 @@ function class:Render()
 	if component.PostRender then
 		component.PostRender(self, self.Context, self.Tree.Context)
 	end
+	debug.profileend()
 end
 
 function class:IsA(name)

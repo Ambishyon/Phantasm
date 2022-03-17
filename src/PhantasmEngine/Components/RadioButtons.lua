@@ -1,3 +1,4 @@
+local Phantasm = require(script.Parent.Parent)
 local Libraries = script.Parent.Parent.Libraries
 local Util = require(Libraries.Util)
 
@@ -132,7 +133,7 @@ return {
 							Position = UDim2.new(0, 0, 0, 0);
 							AnchorPoint = Vector2.new(0, .5);
 							LayoutOrder = 0;
-							Activated = function()
+							[Phantasm.Event.Activated] = function()
 								if self.Disabled then return end
 								self.Value = option
 							end;

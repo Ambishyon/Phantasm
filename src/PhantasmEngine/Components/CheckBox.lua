@@ -1,3 +1,4 @@
+local Phantasm = require(script.Parent.Parent)
 local Libraries = script.Parent.Parent.Libraries
 local Util = require(Libraries.Util)
 
@@ -73,7 +74,7 @@ return {
 				ClassName = "ImageButton";
 				Properties = Util:CombineTables(Util:CombineTables(self.Appearance, self.Disabled and self.DisabledAppearance or {}), {
 					Size = UDim2.fromScale(1,1);
-					Activated = function()
+					[Phantasm.Event.Activated] = function()
 						if self.Disabled then return end
 						self.Value = not self.Value
 					end;
